@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import ProviderPanel from "@/components/provider/ProviderPanel";
 import { useProvider } from "@/hooks/useProvider";
+
+const SESSION_KEY = "promptforge_project_id";
 
 export default function HomePage() {
   const [currentStep, setCurrentStep] = useState("upload");
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [providerConfigOpen, setProviderConfigOpen] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   // Provider state
   const {
@@ -31,12 +34,60 @@ export default function HomePage() {
 
   // Upload state
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; size: number; type: string }[]>([]);
+  const [knownFiles, setKnownFiles] = useState<{ filename: string; chunkCount: number }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Generation state
   const [generating, setGenerating] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
+
+  // Restaura sessão do localStorage no mount
+  useEffect(() => {
+    const savedId = localStorage.getItem(SESSION_KEY);
+    if (!savedId) return;
+
+    setRestoring(true);
+    fetch(`/api/project/${savedId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data?.project) return;
+        const { project, chunks } = data;
+
+        setProjectId(project.id);
+        if (chunks?.length) {
+          setChunks(chunks);
+          setUploadedFiles([]);
+          if (data.files?.length) setKnownFiles(data.files);
+          setCurrentStep("spec");
+          setCompletedSteps(["upload"]);
+        }
+        if (project.objective) setObjective(project.objective);
+        if (project.spec) {
+          setSpec(project.spec);
+          setCurrentStep("persona");
+          setCompletedSteps((p) => [...new Set([...p, "spec"])]);
+        }
+        if (project.persona) {
+          setPersona(project.persona);
+          setCurrentStep("prompt");
+          setCompletedSteps((p) => [...new Set([...p, "persona"])]);
+        }
+        if (project.final_prompt) {
+          setFinalPrompt(project.final_prompt);
+          setCurrentStep("validation");
+          setCompletedSteps((p) => [...new Set([...p, "prompt"])]);
+        }
+        if (project.validation_score) {
+          setValidation(project.validation_score);
+          setCurrentStep("export");
+          setCompletedSteps((p) => [...new Set([...p, "validation"])]);
+        }
+      })
+      .catch(() => localStorage.removeItem(SESSION_KEY))
+      .finally(() => setRestoring(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleClearKnowledge = async () => {
     if (!projectId) {
@@ -59,9 +110,11 @@ export default function HomePage() {
   };
 
   const resetState = () => {
+    localStorage.removeItem(SESSION_KEY);
     setChunks([]);
     setProjectId(null);
     setUploadedFiles([]);
+    setKnownFiles([]);
     setSpec(null);
     setPersona(null);
     setFinalPrompt(null);
@@ -73,13 +126,14 @@ export default function HomePage() {
     setUploadError(null);
   };
 
-  const handleFileUpload = async (files: FileList | null) => {
+  const handleFileUpload = async (files: FileList | null, appendToProjectId?: string | null) => {
     if (!files || files.length === 0) return;
     setUploading(true);
     setUploadError(null);
 
     const formData = new FormData();
     Array.from(files).forEach((file) => formData.append("files", file));
+    if (appendToProjectId) formData.append("projectId", appendToProjectId);
 
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
@@ -90,14 +144,38 @@ export default function HomePage() {
         return;
       }
 
-      setChunks(data.chunks || []);
-      if (data.projectId) setProjectId(data.projectId);
+      const newFiles = Array.from(files).map((f) => ({ name: f.name, size: f.size, type: f.type }));
 
-      setUploadedFiles(
-        Array.from(files).map((f) => ({ name: f.name, size: f.size, type: f.type }))
-      );
-      setCurrentStep("spec");
-      setCompletedSteps(["upload"]);
+      if (appendToProjectId) {
+        // Modo append: merge chunks e arquivos
+        setChunks((prev) => [...prev, ...(data.chunks || [])]);
+        setKnownFiles((prev) => {
+          const updated = [...prev];
+          for (const f of newFiles) {
+            const existing = updated.find((k) => k.filename === f.name);
+            if (existing) {
+              existing.chunkCount += Math.round((data.totalChunks || 0) / newFiles.length);
+            } else {
+              updated.push({ filename: f.name, chunkCount: Math.round((data.totalChunks || 0) / newFiles.length) });
+            }
+          }
+          return updated;
+        });
+      } else {
+        // Primeiro upload: define projeto
+        setChunks(data.chunks || []);
+        if (data.projectId) {
+          setProjectId(data.projectId);
+          localStorage.setItem(SESSION_KEY, data.projectId);
+        }
+        setKnownFiles(
+          newFiles.map((f) => ({ filename: f.name, chunkCount: data.totalChunks || 0 }))
+        );
+        setCurrentStep("spec");
+        setCompletedSteps(["upload"]);
+      }
+
+      setUploadedFiles((prev) => [...prev, ...newFiles]);
     } catch {
       setUploadError("Erro de conexão ao enviar arquivo.");
     } finally {
@@ -137,7 +215,7 @@ export default function HomePage() {
       const res = await fetch("/api/generate/persona", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spec, chunks, objective }),
+        body: JSON.stringify({ spec, chunks, objective, projectId }),
       });
       const data = await res.json();
 
@@ -161,7 +239,7 @@ export default function HomePage() {
       const res = await fetch("/api/generate/prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spec, persona, chunks }),
+        body: JSON.stringify({ spec, persona, chunks, projectId }),
       });
       const data = await res.json();
 
@@ -185,7 +263,7 @@ export default function HomePage() {
       const res = await fetch("/api/generate/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spec, persona, prompt: finalPrompt }),
+        body: JSON.stringify({ spec, persona, prompt: finalPrompt, projectId }),
       });
       const data = await res.json();
 
@@ -228,6 +306,23 @@ export default function HomePage() {
       />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        {/* Restoring banner */}
+        {restoring && (
+          <div
+            className="mb-8 p-4 rounded-xl flex items-center gap-3 slide-up"
+            style={{
+              background: "rgba(99, 102, 241, 0.08)",
+              border: "1px solid rgba(99, 102, 241, 0.2)",
+            }}
+          >
+            <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin flex-shrink-0"
+              style={{ borderColor: "var(--accent-primary)", borderTopColor: "transparent" }} />
+            <p className="text-sm" style={{ color: "var(--text-accent)" }}>
+              Restaurando sessão anterior do Supabase...
+            </p>
+          </div>
+        )}
+
         {/* No Provider Banner */}
         {!anyConfigured && (
           <div
@@ -280,65 +375,122 @@ export default function HomePage() {
         )}
 
         <div className="space-y-6">
-          {/* Section 1: Upload */}
+          {/* Section 1: Conhecimento */}
           <section className="section-card slide-up" style={{ animationDelay: "0.1s" }}>
+            {/* Header */}
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
                 style={{ background: "rgba(99, 102, 241, 0.15)" }}>📄</div>
-              <div>
-                <h2 className="text-base font-semibold">Conhecimento</h2>
+              <div className="flex-1">
+                <h2 className="text-base font-semibold">Base de Conhecimento</h2>
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  Envie documentos para extrair conhecimento base
+                  {knownFiles.length > 0
+                    ? `${knownFiles.length} documento${knownFiles.length > 1 ? "s" : ""} · ${chunks.length} chunks na memória vetorial`
+                    : "Envie documentos para extrair conhecimento base"}
                 </p>
               </div>
-              {uploadedFiles.length > 0 && (
+              {knownFiles.length > 0 && (
                 <button
                   onClick={handleClearKnowledge}
                   disabled={clearing || uploading || generating !== null}
-                  className="ml-auto text-xs px-3 py-1.5 rounded-lg transition-colors hover:bg-red-500 hover:bg-opacity-10"
-                  style={{ 
-                    border: "1px solid rgba(239, 68, 68, 0.3)", 
+                  className="text-xs px-3 py-1.5 rounded-lg transition-colors"
+                  style={{
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
                     color: "var(--accent-danger)",
-                    background: "transparent"
+                    background: "transparent",
                   }}
                 >
-                  {clearing ? "🗑️ Excluindo..." : "🗑️ Deletar Arquivos"}
+                  {clearing ? "Excluindo..." : "🗑️ Limpar base"}
                 </button>
               )}
             </div>
 
-            {uploadedFiles.length > 0 ? (
-              <div className="space-y-3">
-                {uploadedFiles.map((f, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
-                    <span className="text-lg">
-                      {f.name.endsWith(".pdf") ? "📕" : f.name.match(/\.(docx|pptx|xlsx)$/i) ? "📊" : f.name.endsWith(".md") ? "📝" : "📄"}
-                    </span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{f.name}</p>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        {(f.size / 1024).toFixed(1)} KB · {chunks.length} chunks extraídos
-                      </p>
+            {knownFiles.length > 0 ? (
+              <div className="space-y-2">
+                {/* Cards de arquivos indexados */}
+                {knownFiles.map((f, i) => {
+                  const ext = f.filename.split(".").pop()?.toLowerCase() || "";
+                  const icon = ext === "pdf" ? "📕" : ["docx","pptx","xlsx"].includes(ext) ? "📊" : ext === "md" ? "📝" : "📄";
+                  return (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg"
+                      style={{ background: "var(--bg-tertiary)", border: "1px solid var(--border-subtle)" }}>
+                      <span className="text-lg flex-shrink-0">{icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{f.filename}</p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                          {f.chunkCount} chunk{f.chunkCount !== 1 ? "s" : ""} indexado{f.chunkCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+                        style={{ background: "rgba(16,185,129,0.12)", color: "var(--accent-success)", border: "1px solid rgba(16,185,129,0.2)" }}>
+                        ✓ RAG
+                      </span>
                     </div>
-                    <span className="badge badge-success text-xs">✅ Processado</span>
-                  </div>
-                ))}
+                  );
+                })}
 
+                {/* Zona compacta de adicionar mais documentos */}
+                <label
+                  className="flex items-center gap-3 p-3 rounded-lg border-2 border-dashed cursor-pointer transition-all mt-1"
+                  style={{
+                    borderColor: uploading ? "var(--accent-primary)" : "var(--border-medium)",
+                    background: "transparent",
+                    opacity: uploading ? 0.7 : 1,
+                  }}
+                >
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.txt,.md,.markdown,.docx,.pptx,.xlsx"
+                    multiple
+                    onChange={(e) => handleFileUpload(e.target.files, projectId)}
+                    disabled={uploading || generating !== null}
+                  />
+                  {uploading ? (
+                    <>
+                      <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin flex-shrink-0"
+                        style={{ borderColor: "var(--accent-primary)", borderTopColor: "transparent" }} />
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: "var(--text-accent)" }}>
+                          Processando embeddings...
+                        </p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                          Gerando vetores e salvando no pgvector
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-lg flex-shrink-0" style={{ color: "var(--text-muted)" }}>＋</span>
+                      <div>
+                        <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                          Adicionar mais documentos
+                        </p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                          PDF, DOCX, PPTX, XLSX, TXT, MD · Máx. 10 MB · Acumula na mesma base
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </label>
+
+                {/* Preview de chunks */}
                 {chunks.length > 0 && (
-                  <details className="mt-2">
-                    <summary className="text-xs cursor-pointer" style={{ color: "var(--text-accent)" }}>
-                      Ver chunks extraídos ({chunks.length})
+                  <details className="mt-1">
+                    <summary className="text-xs cursor-pointer py-1" style={{ color: "var(--text-accent)" }}>
+                      Inspecionar chunks ({chunks.length})
                     </summary>
-                    <div className="mt-2 max-h-48 overflow-y-auto space-y-2">
+                    <div className="mt-2 max-h-48 overflow-y-auto space-y-1.5">
                       {chunks.slice(0, 5).map((chunk, i) => (
-                        <div key={i} className="p-2 rounded-lg text-xs" style={{ background: "var(--bg-primary)", color: "var(--text-secondary)" }}>
-                          <span className="font-mono text-[0.65rem]" style={{ color: "var(--text-muted)" }}>Chunk {i + 1}:</span>
-                          <p className="mt-1 line-clamp-3">{chunk}</p>
+                        <div key={i} className="p-2 rounded-lg text-xs"
+                          style={{ background: "var(--bg-primary)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
+                          <span className="font-mono text-[0.65rem]" style={{ color: "var(--text-muted)" }}>#{i + 1}</span>
+                          <p className="mt-0.5 line-clamp-2">{chunk}</p>
                         </div>
                       ))}
                       {chunks.length > 5 && (
-                        <p className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
-                          ... e mais {chunks.length - 5} chunks
+                        <p className="text-xs text-center py-1" style={{ color: "var(--text-muted)" }}>
+                          + {chunks.length - 5} chunks adicionais
                         </p>
                       )}
                     </div>
@@ -346,9 +498,13 @@ export default function HomePage() {
                 )}
               </div>
             ) : (
+              /* Drop zone inicial — base vazia */
               <label
-                className="block border-2 border-dashed rounded-xl p-12 text-center transition-all hover:border-[var(--accent-primary)] cursor-pointer"
-                style={{ borderColor: "var(--border-medium)", background: "var(--bg-tertiary)" }}
+                className="block border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer"
+                style={{
+                  borderColor: uploading ? "var(--accent-primary)" : "var(--border-medium)",
+                  background: "var(--bg-tertiary)",
+                }}
               >
                 <input
                   type="file"
@@ -360,17 +516,23 @@ export default function HomePage() {
                 />
                 {uploading ? (
                   <>
-                    <div className="w-8 h-8 mx-auto mb-3 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--accent-primary)", borderTopColor: "transparent" }} />
-                    <p className="text-sm font-medium" style={{ color: "var(--text-accent)" }}>Processando...</p>
+                    <div className="w-8 h-8 mx-auto mb-3 rounded-full border-2 border-t-transparent animate-spin"
+                      style={{ borderColor: "var(--accent-primary)", borderTopColor: "transparent" }} />
+                    <p className="text-sm font-medium" style={{ color: "var(--text-accent)" }}>
+                      Processando embeddings...
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                      Gerando vetores e salvando no pgvector
+                    </p>
                   </>
                 ) : (
                   <>
-                    <div className="text-4xl mb-3 opacity-50">📁</div>
+                    <div className="text-4xl mb-3 opacity-40">📁</div>
                     <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-                      Arraste um arquivo ou clique para selecionar
+                      Arraste arquivos ou clique para selecionar
                     </p>
                     <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                      Formatos aceitos: PDF, DOCX, PPTX, XLSX, TXT, Markdown · Máx. 10 MB
+                      PDF, DOCX, PPTX, XLSX, TXT, Markdown · Máx. 10 MB por arquivo
                     </p>
                   </>
                 )}

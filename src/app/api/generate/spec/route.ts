@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateWithFallback } from "@/lib/providers/selector";
 import { buildSpecGeneratorPrompt } from "@/lib/prompts/spec-generator";
 import { generateEmbedding } from "@/lib/embeddings";
-import { matchKnowledge } from "@/lib/db/supabase";
+import { matchKnowledge, saveProject } from "@/lib/db/supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,6 +57,11 @@ export async function POST(request: NextRequest) {
       spec = JSON.parse(jsonMatch?.[0] || result.text);
     } catch {
       spec = { raw_output: result.text };
+    }
+
+    // Persiste spec + objective no projeto
+    if (projectId) {
+      await saveProject({ id: projectId, name: `Upload RAG`, objective, spec }).catch(() => null);
     }
 
     return NextResponse.json({

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithFallback } from "@/lib/providers/selector";
 import { buildPersonaGeneratorPrompt } from "@/lib/prompts/persona-generator";
+import { saveProject } from "@/lib/db/supabase";
 
 export async function POST(request: NextRequest) {
   try {
-    const { spec, chunks, objective } = await request.json();
+    const { spec, chunks, objective, projectId } = await request.json();
 
     if (!spec) {
       return NextResponse.json(
@@ -33,6 +34,10 @@ export async function POST(request: NextRequest) {
       persona = JSON.parse(jsonMatch?.[0] || result.text);
     } catch {
       persona = { raw_output: result.text };
+    }
+
+    if (projectId) {
+      await saveProject({ id: projectId, name: `Upload RAG`, persona }).catch(() => null);
     }
 
     return NextResponse.json({

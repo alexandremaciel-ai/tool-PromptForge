@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithFallback } from "@/lib/providers/selector";
 import { buildValidatorPrompt } from "@/lib/prompts/validator";
+import { saveProject } from "@/lib/db/supabase";
 
 export async function POST(request: NextRequest) {
   try {
-    const { spec, persona, prompt } = await request.json();
+    const { spec, persona, prompt, projectId } = await request.json();
 
     if (!spec || !persona || !prompt) {
       return NextResponse.json(
@@ -44,6 +45,10 @@ export async function POST(request: NextRequest) {
         suggestions: ["Revise o prompt manualmente."],
         raw_output: result.text,
       };
+    }
+
+    if (projectId) {
+      await saveProject({ id: projectId, name: `Upload RAG`, validation_score: validation }).catch(() => null);
     }
 
     return NextResponse.json({

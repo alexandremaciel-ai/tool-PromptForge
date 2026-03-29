@@ -83,6 +83,74 @@ export async function matchKnowledge(projectId: string, queryEmbedding: number[]
 }
 
 /**
+ * Busca um projeto pelo ID
+ */
+export async function getProject(projectId: string) {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", projectId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Busca os chunks de texto de um projeto (sem embeddings)
+ */
+export async function getProjectChunks(projectId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("knowledge_chunks")
+    .select("content")
+    .eq("project_id", projectId)
+    .order("id");
+
+  if (error) throw error;
+  return (data || []).map((row: { content: string }) => row.content);
+}
+
+/**
+ * Retorna os arquivos indexados de um projeto agrupados por nome,
+ * com contagem de chunks por arquivo.
+ */
+export async function getProjectFiles(
+  projectId: string
+): Promise<{ filename: string; chunkCount: number }[]> {
+  const { data, error } = await supabase
+    .from("knowledge_chunks")
+    .select("metadata")
+    .eq("project_id", projectId);
+
+  if (error) throw error;
+
+  const counts: Record<string, number> = {};
+  for (const row of data || []) {
+    const filename: string = row.metadata?.filename || "Documento sem nome";
+    counts[filename] = (counts[filename] || 0) + 1;
+  }
+
+  return Object.entries(counts).map(([filename, chunkCount]) => ({
+    filename,
+    chunkCount,
+  }));
+}
+
+/**
+ * Lista os projetos mais recentes (máx. 10)
+ */
+export async function listProjects() {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("id, name, objective, created_at")
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
  * Deleta todo o conhecimento atrelado a um ID de projeto
  */
 export async function deleteProject(projectId: string) {
