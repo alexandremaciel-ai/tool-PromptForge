@@ -1,0 +1,32 @@
+{
+  "name": "promptforge-init",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "all": "bash -c 'trap \"npx supabase stop\" EXIT; npx supabase start && next dev'",
+    "stop:all": "npx supabase stop && lsof -ti:3000 | xargs kill -9 || true"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.1",
+    "next": "16.2.1",
+    "officeparser": "^6.0.7",
+    "pdf-parse": "^2.4.5",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
