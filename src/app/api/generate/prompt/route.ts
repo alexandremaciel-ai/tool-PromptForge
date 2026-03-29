@@ -5,7 +5,7 @@ import { saveProject } from "@/lib/db/supabase";
 
 export async function POST(request: NextRequest) {
   try {
-    const { spec, persona, chunks, projectId } = await request.json();
+    const { spec, persona, chunks, projectId, selectedStrategies = [] } = await request.json();
 
     if (!spec || !persona) {
       return NextResponse.json(
@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
     const { systemPrompt, userPrompt } = buildPromptBuilderPrompt(
       spec,
       persona,
-      chunks || []
+      chunks || [],
+      selectedStrategies
     );
 
     const result = await generateWithFallback({

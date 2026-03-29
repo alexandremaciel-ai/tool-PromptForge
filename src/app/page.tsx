@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import ProviderPanel from "@/components/provider/ProviderPanel";
 import { useProvider } from "@/hooks/useProvider";
+import { PROMPT_STRATEGIES, STRATEGY_CATEGORIES } from "@/lib/prompts/strategies";
 
 const SESSION_KEY = "promptforge_project_id";
 
@@ -37,6 +38,9 @@ export default function HomePage() {
   const [knownFiles, setKnownFiles] = useState<{ filename: string; chunkCount: number }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Strategies state
+  const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]);
 
   // Generation state
   const [generating, setGenerating] = useState<string | null>(null);
@@ -239,7 +243,7 @@ export default function HomePage() {
       const res = await fetch("/api/generate/prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spec, persona, chunks, projectId }),
+        body: JSON.stringify({ spec, persona, chunks, projectId, selectedStrategies }),
       });
       const data = await res.json();
 
@@ -657,13 +661,120 @@ export default function HomePage() {
                   </div>
                 ))}
                 {!finalPrompt && (
-                  <button
-                    className="btn-primary mt-2"
-                    onClick={handleGeneratePrompt}
-                    disabled={generating === "prompt" || !anyConfigured}
-                  >
-                    {generating === "prompt" ? "⏳ Gerando prompt..." : "⚡ Gerar Prompt Final"}
-                  </button>
+                  <>
+                    {/* Painel de Estratégias Avançadas */}
+                    <div className="mt-4 rounded-xl overflow-hidden"
+                      style={{ border: "1px solid var(--border-medium)", background: "var(--bg-primary)" }}>
+
+                      {/* Header do painel */}
+                      <div className="flex items-center justify-between px-4 py-3"
+                        style={{ borderBottom: "1px solid var(--border-subtle)", background: "var(--bg-tertiary)" }}>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">⚡</span>
+                          <div>
+                            <p className="text-sm font-semibold">Estratégias Avançadas</p>
+                            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                              {selectedStrategies.length === 0
+                                ? "Selecione para injetar no prompt final"
+                                : `${selectedStrategies.length} de ${PROMPT_STRATEGIES.length} ativa${selectedStrategies.length > 1 ? "s" : ""}`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="text-xs px-2.5 py-1 rounded-lg transition-colors"
+                            style={{ background: "rgba(99,102,241,0.12)", color: "var(--text-accent)", border: "1px solid rgba(99,102,241,0.2)" }}
+                            onClick={() => setSelectedStrategies(PROMPT_STRATEGIES.map((s) => s.id))}
+                          >
+                            Todas
+                          </button>
+                          <button
+                            className="text-xs px-2.5 py-1 rounded-lg transition-colors"
+                            style={{ background: "var(--bg-tertiary)", color: "var(--text-muted)", border: "1px solid var(--border-subtle)" }}
+                            onClick={() => setSelectedStrategies([])}
+                          >
+                            Nenhuma
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Grid de estratégias por categoria */}
+                      <div className="p-3 space-y-3">
+                        {(Object.keys(STRATEGY_CATEGORIES) as Array<keyof typeof STRATEGY_CATEGORIES>).map((cat) => {
+                          const catStrategies = PROMPT_STRATEGIES.filter((s) => s.category === cat);
+                          const catInfo = STRATEGY_CATEGORIES[cat];
+                          return (
+                            <div key={cat}>
+                              <p className="text-[0.65rem] font-semibold uppercase tracking-widest mb-1.5 px-1"
+                                style={{ color: "var(--text-muted)" }}>
+                                {catInfo.label}
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                {catStrategies.map((strategy) => {
+                                  const active = selectedStrategies.includes(strategy.id);
+                                  return (
+                                    <button
+                                      key={strategy.id}
+                                      onClick={() =>
+                                        setSelectedStrategies((prev) =>
+                                          active ? prev.filter((id) => id !== strategy.id) : [...prev, strategy.id]
+                                        )
+                                      }
+                                      className="flex items-start gap-2.5 p-2.5 rounded-lg text-left transition-all"
+                                      style={{
+                                        background: active ? catInfo.color : "var(--bg-tertiary)",
+                                        border: `1px solid ${active ? catInfo.border : "var(--border-subtle)"}`,
+                                        outline: "none",
+                                      }}
+                                    >
+                                      {/* Checkbox visual */}
+                                      <div className="flex-shrink-0 w-4 h-4 rounded mt-0.5 flex items-center justify-center"
+                                        style={{
+                                          background: active ? "var(--accent-primary)" : "transparent",
+                                          border: `1.5px solid ${active ? "var(--accent-primary)" : "var(--border-medium)"}`,
+                                        }}>
+                                        {active && (
+                                          <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                                            <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-1.5">
+                                          <span className="text-sm leading-none">{strategy.icon}</span>
+                                          <p className="text-xs font-semibold leading-tight truncate"
+                                            style={{ color: active ? "var(--text-primary)" : "var(--text-secondary)" }}>
+                                            {strategy.name}
+                                          </p>
+                                        </div>
+                                        <p className="text-[0.65rem] mt-0.5 line-clamp-2 leading-tight"
+                                          style={{ color: "var(--text-muted)" }}>
+                                          {strategy.short}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Botão de geração */}
+                    <button
+                      className="btn-primary mt-3 w-full"
+                      onClick={handleGeneratePrompt}
+                      disabled={generating === "prompt" || !anyConfigured}
+                    >
+                      {generating === "prompt"
+                        ? "⏳ Gerando prompt..."
+                        : selectedStrategies.length > 0
+                        ? `⚡ Gerar Prompt com ${selectedStrategies.length} Estratégia${selectedStrategies.length > 1 ? "s" : ""}`
+                        : "⚡ Gerar Prompt Final"}
+                    </button>
+                  </>
                 )}
               </div>
             ) : (
