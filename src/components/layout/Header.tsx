@@ -1,22 +1,23 @@
 "use client";
 
-import ProviderBadge from "./ProviderBadge";
 import StepIndicator from "./StepIndicator";
 
 interface HeaderProps {
   currentStep: string;
   completedSteps: string[];
-  providerName: string | null;
-  isFallback?: boolean;
+  hasActiveSession: boolean;
   onOpenProviderConfig: () => void;
+  onOpenLibrary: () => void;
+  onReset: () => void;
 }
 
 export default function Header({
   currentStep,
   completedSteps,
-  providerName,
-  isFallback,
+  hasActiveSession,
   onOpenProviderConfig,
+  onOpenLibrary,
+  onReset,
 }: HeaderProps) {
   return (
     <header
@@ -57,13 +58,40 @@ export default function Header({
             />
           </div>
 
-          {/* Provider + Settings */}
-          <div className="flex items-center gap-3">
-            <ProviderBadge
-              providerName={providerName}
-              isFallback={isFallback}
-              onOpenConfig={onOpenProviderConfig}
-            />
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            {/* Biblioteca */}
+            <button
+              onClick={onOpenLibrary}
+              className="h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs font-medium transition-all"
+              style={{
+                background: "var(--bg-tertiary)",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-secondary)",
+              }}
+              title="Biblioteca de prompts salvos"
+            >
+              <span>📚</span>
+              <span className="hidden sm:inline">Biblioteca</span>
+            </button>
+
+            {/* Reiniciar — só aparece quando há sessão ativa */}
+            {hasActiveSession && (
+              <button
+                onClick={onReset}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                style={{
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  color: "var(--accent-danger)",
+                }}
+                title="Reiniciar — apaga sessão atual e recomeça"
+              >
+                🔄
+              </button>
+            )}
+
+            {/* Configurações */}
             <button
               onClick={onOpenProviderConfig}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
@@ -72,7 +100,7 @@ export default function Header({
                 border: "1px solid var(--border-subtle)",
                 color: "var(--text-secondary)",
               }}
-              title="Configurações"
+              title="Configurações de provider"
               aria-label="Abrir configurações de provider"
             >
               ⚙️

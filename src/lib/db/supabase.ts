@@ -82,6 +82,75 @@ export async function matchKnowledge(projectId: string, queryEmbedding: number[]
   return data;
 }
 
+// ─── Saved Prompts ────────────────────────────────────────────────────────────
+
+export interface SavedPromptData {
+  id?: string;
+  name: string;
+  final_prompt: string;
+  spec?: Record<string, unknown>;
+  persona?: Record<string, unknown>;
+  validation_score?: Record<string, unknown>;
+  strategies?: string[];
+  score?: number;
+}
+
+export interface SavedPromptRow extends SavedPromptData {
+  id: string;
+  created_at: string;
+}
+
+export async function savePrompt(data: SavedPromptData): Promise<SavedPromptRow> {
+  const { data: inserted, error } = await supabase
+    .from("saved_prompts")
+    .insert({
+      name: data.name,
+      final_prompt: data.final_prompt,
+      spec: data.spec ?? null,
+      persona: data.persona ?? null,
+      validation_score: data.validation_score ?? null,
+      strategies: data.strategies ?? [],
+      score: data.score ?? 0,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return inserted as SavedPromptRow;
+}
+
+export async function listSavedPrompts(): Promise<SavedPromptRow[]> {
+  const { data, error } = await supabase
+    .from("saved_prompts")
+    .select("id, name, score, strategies, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as SavedPromptRow[];
+}
+
+export async function getSavedPrompt(id: string): Promise<SavedPromptRow> {
+  const { data, error } = await supabase
+    .from("saved_prompts")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data as SavedPromptRow;
+}
+
+export async function deleteSavedPrompt(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("saved_prompts")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
 /**
  * Busca um projeto pelo ID
  */

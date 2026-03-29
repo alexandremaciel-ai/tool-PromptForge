@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import ProviderPanel from "@/components/provider/ProviderPanel";
+import LibraryPanel from "@/components/library/LibraryPanel";
 import { useProvider } from "@/hooks/useProvider";
 import { PROMPT_STRATEGIES, STRATEGY_CATEGORIES } from "@/lib/prompts/strategies";
 
@@ -12,6 +13,7 @@ export default function HomePage() {
   const [currentStep, setCurrentStep] = useState("upload");
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [providerConfigOpen, setProviderConfigOpen] = useState(false);
+  const [libraryPanelOpen, setLibraryPanelOpen] = useState(false);
   const [restoring, setRestoring] = useState(false);
 
   // Provider state
@@ -41,6 +43,11 @@ export default function HomePage() {
 
   // Strategies state
   const [selectedStrategies, setSelectedStrategies] = useState<string[]>([]);
+
+  // Library state
+  const [savingPrompt, setSavingPrompt] = useState(false);
+  const [savePromptName, setSavePromptName] = useState("");
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
   // Generation state
   const [generating, setGenerating] = useState<string | null>(null);
@@ -128,6 +135,9 @@ export default function HomePage() {
     setGenerating(null);
     setObjective("");
     setUploadError(null);
+    setSelectedStrategies([]);
+    setSavePromptName("");
+    setSavedSuccess(false);
   };
 
   const handleFileUpload = async (files: FileList | null, appendToProjectId?: string | null) => {
@@ -294,10 +304,52 @@ export default function HomePage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `promptforge-export.${format === "md" ? "md" : "json"}`;
+    a.download = format === "md" ? "prompt.md" : "prompt-export.json";
     a.click();
     URL.revokeObjectURL(url);
     setCompletedSteps((prev) => [...new Set([...prev, "export"])]);
+  };
+
+  const handleSavePrompt = async () => {
+    if (!finalPrompt || !savePromptName.trim()) return;
+    setSavingPrompt(true);
+    try {
+      const res = await fetch("/api/saved-prompts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: savePromptName.trim(),
+          final_prompt: finalPrompt,
+          spec,
+          persona,
+          validation_score: validation,
+          strategies: selectedStrategies,
+          score: Number(validation?.score ?? 0),
+        }),
+      });
+      if (res.ok) {
+        setSavePromptName("");
+        setSavedSuccess(true);
+        setTimeout(() => setSavedSuccess(false), 3000);
+      }
+    } catch { /* silent */ } finally {
+      setSavingPrompt(false);
+    }
+  };
+
+  const handleRestorePrompt = async (id: string) => {
+    try {
+      const res = await fetch(`/api/saved-prompts/${id}`);
+      if (!res.ok) return;
+      const { prompt: saved } = await res.json();
+      if (saved.final_prompt) setFinalPrompt(saved.final_prompt);
+      if (saved.spec) { setSpec(saved.spec); setCompletedSteps((p) => [...new Set([...p, "spec"])]); }
+      if (saved.persona) { setPersona(saved.persona); setCompletedSteps((p) => [...new Set([...p, "persona"])]); }
+      if (saved.validation_score) { setValidation(saved.validation_score); setCompletedSteps((p) => [...new Set([...p, "validation"])]); }
+      if (saved.strategies?.length) setSelectedStrategies(saved.strategies);
+      setCurrentStep("export");
+      setCompletedSteps((p) => [...new Set([...p, "prompt"])]);
+    } catch { /* silent */ }
   };
 
   return (
@@ -305,8 +357,10 @@ export default function HomePage() {
       <Header
         currentStep={currentStep}
         completedSteps={completedSteps}
-        providerName={activeProviderName}
+        hasActiveSession={knownFiles.length > 0 || chunks.length > 0}
         onOpenProviderConfig={() => setProviderConfigOpen(true)}
+        onOpenLibrary={() => setLibraryPanelOpen(true)}
+        onReset={handleClearKnowledge}
       />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -839,18 +893,19 @@ export default function HomePage() {
             )}
           </section>
 
-          {/* Section 6: Validation + Export */}
+          {/* Section 6: Validação & Export */}
           <section className="section-card slide-up" style={{ animationDelay: "0.6s" }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
                 style={{ background: "rgba(16, 185, 129, 0.15)" }}>✅</div>
-              <div>
+              <div className="flex-1">
                 <h2 className="text-base font-semibold">Validação & Export</h2>
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  Consistência, score e exportação de artefatos
+                  Score de consistência e exportação do prompt
                 </p>
               </div>
             </div>
+
             {generating === "validation" ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
@@ -860,60 +915,103 @@ export default function HomePage() {
             ) : validation ? (
               <div className="space-y-4">
                 {/* Checks */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {(validation.checks as { criterion: string; pass: boolean; note: string }[] || []).map(
                     (check, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
-                        <span>{check.pass ? "✅" : "❌"}</span>
-                        <span className="text-sm flex-1">{check.criterion}</span>
-                        {check.note && (
-                          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{check.note}</span>
-                        )}
+                      <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg"
+                        style={{ background: "var(--bg-tertiary)", border: "1px solid var(--border-subtle)" }}>
+                        <span className="flex-shrink-0 text-sm mt-0.5">{check.pass ? "✅" : "❌"}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                            {check.criterion}
+                          </p>
+                          {check.note && (
+                            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                              {check.note}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     )
                   )}
                 </div>
 
-                {/* Score */}
-                {validation.score !== undefined && (
-                  <div className="flex items-center gap-3 p-4 rounded-lg" style={{ background: "var(--bg-tertiary)" }}>
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold"
-                      style={{
-                        background: `conic-gradient(var(--accent-success) ${Number(validation.score)}%, var(--bg-primary) 0)`,
-                      }}
-                    >
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center"
-                        style={{ background: "var(--bg-tertiary)" }}>
-                        {String(validation.score)}%
-                      </div>
+                {/* Score + Export */}
+                <div className="flex items-center gap-3 p-4 rounded-xl"
+                  style={{ background: "var(--bg-tertiary)", border: "1px solid var(--border-subtle)" }}>
+                  {validation.score !== undefined && (
+                    <div className="flex-shrink-0 relative w-16 h-16">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="15.9" fill="none" strokeWidth="2.5"
+                          style={{ stroke: "var(--border-medium)" }} />
+                        <circle cx="18" cy="18" r="15.9" fill="none" strokeWidth="2.5"
+                          strokeDasharray={`${Number(validation.score)} ${100 - Number(validation.score)}`}
+                          strokeLinecap="round"
+                          style={{ stroke: Number(validation.score) >= 80 ? "var(--accent-success)" : Number(validation.score) >= 60 ? "var(--accent-warning)" : "var(--accent-danger)", transition: "stroke-dasharray 0.6s ease" }} />
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">
+                        {String(validation.score)}
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold">Score de Consistência</p>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        Coerência entre spec, persona e prompt
-                      </p>
-                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">Score de Consistência</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      Coerência entre spec, persona e prompt
+                    </p>
                   </div>
-                )}
+                  <div className="flex flex-col gap-2">
+                    <button className="btn-primary text-xs py-1.5 px-3 whitespace-nowrap" onClick={() => handleExport("md")}>
+                      📝 Prompt .md
+                    </button>
+                    <button className="btn-secondary text-xs py-1.5 px-3 whitespace-nowrap" onClick={() => handleExport("json")}>
+                      {"{ }"} Artefato .json
+                    </button>
+                  </div>
+                </div>
 
-                {/* Export buttons */}
-                <div className="flex gap-3 pt-2">
-                  <button className="btn-primary flex-1" onClick={() => handleExport("md")}>
-                    📝 Export Markdown
-                  </button>
-                  <button className="btn-secondary flex-1" onClick={() => handleExport("json")}>
-                    {"{ }"} Export JSON
-                  </button>
+                {/* Salvar na biblioteca */}
+                <div className="rounded-xl overflow-hidden"
+                  style={{ border: "1px solid var(--border-medium)", background: "var(--bg-primary)" }}>
+                  <div className="px-4 py-3 flex items-center gap-2"
+                    style={{ borderBottom: "1px solid var(--border-subtle)", background: "var(--bg-tertiary)" }}>
+                    <span className="text-sm">💾</span>
+                    <p className="text-sm font-semibold">Salvar na Biblioteca</p>
+                    {savedSuccess && (
+                      <span className="ml-auto text-xs px-2 py-0.5 rounded-full"
+                        style={{ background: "rgba(16,185,129,0.15)", color: "var(--accent-success)", border: "1px solid rgba(16,185,129,0.25)" }}>
+                        ✓ Salvo!
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3 flex gap-2">
+                    <input
+                      type="text"
+                      className="input-field flex-1 text-sm py-2"
+                      placeholder="Nome do prompt (ex: Agente de Suporte v1)"
+                      value={savePromptName}
+                      onChange={(e) => setSavePromptName(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSavePrompt()}
+                      maxLength={80}
+                    />
+                    <button
+                      onClick={handleSavePrompt}
+                      disabled={savingPrompt || !savePromptName.trim()}
+                      className="btn-primary text-xs px-4 py-2 whitespace-nowrap flex-shrink-0"
+                    >
+                      {savingPrompt ? "Salvando..." : "Salvar"}
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="p-6 rounded-lg text-center" style={{ background: "var(--bg-tertiary)" }}>
                 <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                  Validação e export disponíveis após geração do prompt
+                  Validação disponível após geração do prompt
                 </p>
               </div>
             )}
+
           </section>
         </div>
       </main>
@@ -930,6 +1028,14 @@ export default function HomePage() {
           fallbackProvider={fallbackProvider}
           onTest={testProvider}
           onClose={() => setProviderConfigOpen(false)}
+        />
+      )}
+
+      {/* Library Panel */}
+      {libraryPanelOpen && (
+        <LibraryPanel
+          onRestore={handleRestorePrompt}
+          onClose={() => setLibraryPanelOpen(false)}
         />
       )}
     </div>
