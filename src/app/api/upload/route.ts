@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseFile } from "@/lib/parser";
 import { chunkText } from "@/lib/parser/chunker";
+
+// Parse + embedding pode ser lento com arquivos grandes — 300s (requer plano Pro)
+export const maxDuration = 300;
 import { batchGenerateEmbeddings } from "@/lib/embeddings";
 import { insertKnowledgeChunks, saveProject } from "@/lib/db/supabase";
 

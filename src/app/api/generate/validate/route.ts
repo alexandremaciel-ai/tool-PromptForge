@@ -1,3 +1,6 @@
+// Geração LLM pode ser lenta — 60s compatível com Hobby e Pro
+export const maxDuration = 60;
+
 import { NextRequest, NextResponse } from "next/server";
 import { generateWithFallback } from "@/lib/providers/selector";
 import { buildValidatorPrompt } from "@/lib/prompts/validator";
