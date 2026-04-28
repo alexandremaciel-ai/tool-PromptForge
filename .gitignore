@@ -1,6 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# ─── Dependencies ─────────────────────────────────────────────────────────────
 /node_modules
 /.pnp
 .pnp.*
@@ -10,40 +8,106 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# ─── Next.js ──────────────────────────────────────────────────────────────────
 /.next/
 /out/
 
-# production
+# ─── Build output ─────────────────────────────────────────────────────────────
 /build
+/dist
 
-# misc
-.DS_Store
+# ─── Testing ──────────────────────────────────────────────────────────────────
+/coverage
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+# Nunca commitar arquivos .env com valores reais.
+# Copie .env.example para .env.local e preencha localmente.
+.env
+.env.*
+!.env.example
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.staging
+.env.staging.local
+
+# ─── Uploads & arquivos temporários ───────────────────────────────────────────
+/uploads
+/tmp
+/temp
+
+# ─── Supabase — estado local (gerado automaticamente pela CLI) ─────────────────
+supabase/.temp/
+supabase/.branches/
+supabase/.env
+supabase/seed.sql
+
+# ─── Vercel ───────────────────────────────────────────────────────────────────
+.vercel
+
+# ─── Python virtual environment ───────────────────────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# ─── TypeScript ───────────────────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── IDE & Editores ───────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ─── Claude Code ──────────────────────────────────────────────────────────────
+# settings.local.json contém permissões e configurações pessoais
+.claude/settings.local.json
+.claude/todos/
+
+# ─── Certificados & chaves ────────────────────────────────────────────────────
 *.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.cer
 
-# debug
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
-# env files
-.env
-.env.local
-.env.*.local
-.env.production
-.env.staging
-!.env.example
+# ─── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
 
-# uploads
-/uploads
+# ─── Windows ──────────────────────────────────────────────────────────────────
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ─── Scripts de debug/teste locais ────────────────────────────────────────────
+# Arquivos de teste ad-hoc que não fazem parte da suíte oficial
+test-*.js
+test-*.ts
+debug-*.js
+debug-*.ts
