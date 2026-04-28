@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "all": "bash -c 'trap \"npx supabase stop\" EXIT; npx supabase start && next dev'",
-    "stop:all": "npx supabase stop && lsof -ti:3000 | xargs kill -9 || true"
+    "all": "bash -c 'trap \"npx supabase stop; lsof -ti:3000 | xargs kill -9 2>/dev/null\" EXIT; npx supabase start && npm run build && npm start'",
+    "all:dev": "bash -c 'trap \"npx supabase stop\" EXIT; npx supabase start && next dev'",
+    "stop:all": "npx supabase stop; lsof -ti:3000 | xargs kill -9 2>/dev/null; true"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.1",
