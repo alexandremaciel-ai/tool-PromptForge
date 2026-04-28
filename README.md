@@ -1,80 +1,80 @@
 # ⚡ PromptForge
 
-**Engenharia de Prompt por Especificação (Spec-Driven Development)**
+**Spec-Driven Prompt Engineering**
 
-PromptForge é uma aplicação de demonstração que transforma conhecimento bruto (documentos estruturados e não-estruturados) em artefatos operacionais finais, automatizando o pipeline completo de *Prompt Engineering*. 
+PromptForge is a demo application that transforms raw knowledge (structured and unstructured documents) into final operational artifacts, automating the complete *Prompt Engineering* pipeline.
 
-Construída em **Next.js 14**, a aplicação ilustra na prática como ir do texto solto até um prompt final testável através de uma abordagem orientada a especificações rigorosas, alavancando arquiteturas profissionais de RAG local.
+Built on **Next.js 14**, the application demonstrates in practice how to go from loose text to a testable final prompt through a rigorous spec-oriented approach, leveraging professional local RAG architectures.
 
 ---
 
-## ✨ Features Principais
+## ✨ Key Features
 
-- **Ingestão Profissional de Conhecimento:** Upload local de **PDFs, DOCX, PPTX, XLSX, TXT e Markdown**. Utiliza parsing contínuo e chunking automático.
-- **RAG Inteligente (Supabase pgvector):** Arquitetura incorporada de vetores baseada em `pgvector`. Evita a injeção do "calhamaço" de contexto no LLM, processando Embeddings e recuperando via *Busca Semântica* apenas as 5 frações mais essenciais ao objetivo do usuário.
-- **Embeddings Resilientes:** Geração em bath para os provedores MiniMax e OpenRouter de forma polimórfica, garantida por um controle de *Exponential Backoff* que suporta e mitiga gargalos ou tetos de "Rate Limit (RPM)" nas interações.
-- **Spec-Driven Pipeline:** Um fluxo de trabalho de 6 etapas que não pula o planejamento:
-  1. Conhecimento (Upload & Vector Storage)
-  2. Objetivo Semântico
-  3. Especificação Formal (JSON)
-  4. Persona do Agente (JSON)
-  5. Prompt Final (Markdown)
-  6. Validação de Consistência
-- **Provider Layer Abstraída:** Adaptadores para múltiplas APIs (OpenRouter, Anthropic, MiniMax) com **Fallback** ativo e abstrações JSON de resposta transparentes.
-- **Controle Total de Estado:** Deleção em cascata integrada com Supabase para expurgar arquivos indesejados e zerar os fluxos, evitando vetores e chunks de conhecimento "órfãos".
-- **Exportação Universal:** Exporte o "pacote" do prompt final validado em Markdown ou JSON visando deploy em produção.
+- **Professional Knowledge Ingestion:** Local upload of **PDFs, DOCX, PPTX, XLSX, TXT, and Markdown**. Uses continuous parsing and automatic chunking.
+- **Intelligent RAG (Supabase pgvector):** Embedded vector architecture based on `pgvector`. Avoids injecting a "wall of context" into the LLM by processing Embeddings and retrieving via *Semantic Search* only the 5 most relevant chunks to the user's objective.
+- **Resilient Embeddings:** Polymorphic batch generation for MiniMax and OpenRouter providers, guaranteed by an *Exponential Backoff* control that supports and mitigates bottlenecks or Rate Limit (RPM) ceilings during interactions.
+- **Spec-Driven Pipeline:** A 6-step workflow that doesn't skip planning:
+  1. Knowledge (Upload & Vector Storage)
+  2. Semantic Objective
+  3. Formal Specification (JSON)
+  4. Agent Persona (JSON)
+  5. Final Prompt (Markdown)
+  6. Consistency Validation
+- **Abstracted Provider Layer:** Adapters for multiple APIs (OpenRouter, Anthropic, MiniMax) with active **Fallback** and transparent JSON response abstractions.
+- **Full State Control:** Cascade deletion integrated with Supabase to purge unwanted files and reset flows, preventing orphaned knowledge vectors and chunks.
+- **Universal Export:** Export the validated final prompt "package" in Markdown or JSON for production deployment.
 
 ---
 
 ## 🚀 Quickstarts
 
-### Inicialização Total Integrada (Recomendado)
+### Full Integrated Initialization (Recommended)
 
-O PromptForge acompanha todo um ecossistema Docker para o RAG funcionar offline de forma indolor. Nós unimos Node.js e orquestração Docker num único comando:
+PromptForge ships with a complete Docker ecosystem for painless offline RAG. We combine Node.js and Docker orchestration into a single command:
 
-**1. Clone e instale as dependências:**
-\`\`\`bash
+**1. Clone and install dependencies:**
+```bash
 npm ci
-\`\`\`
+```
 
-**2. Configure o ambiente:**
-Copie as variáveis do exemplo. Você precisará de pelo menos a chave da MiniMax ou OpenRouter/Anthropic:
-\`\`\`bash
+**2. Configure the environment:**
+Copy the example variables. You'll need at least a MiniMax or OpenRouter/Anthropic key:
+```bash
 cp .env.example .env
-\`\`\`
+```
 
-**3. Suba o Backend Completo (Supabase DB + Next.js App):**
-\`\`\`bash
+**3. Start the Full Backend (Supabase DB + Next.js App):**
+```bash
 npm run all
-\`\`\`
-*(Este comando levanta os contêineres Docker essenciais do Supabase em background, aguarda eles ficarem "saudáveis", executa localmente as migrations do db, e dispara o servidor Next.js em localhost:3000 amarrando os encerramentos com trap actions)*
+```
+*(This command spins up the essential Supabase Docker containers in the background, waits for them to become "healthy", runs db migrations locally, and starts the Next.js server at localhost:3000, binding shutdowns with trap actions)*
 
-**4. Derrubando a Aplicação:**
-\`\`\`bash
+**4. Tearing Down the Application:**
+```bash
 npm run stop:all
-\`\`\`
-*(Fecha o Next.js e derruba os recursos massivos do Supabase para poupar memória na sua máquina).*
+```
+*(Closes Next.js and brings down the heavy Supabase resources to save memory on your machine).*
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 🛠️ Tech Stack
 
-- **Framework Front:** Next.js 14 (App Router)
-- **Linguagem:** TypeScript 
-- **DB e Vector Storage:** Supabase (PostgreSQL 15 + pgvector via Docker)
-- **Estilização:** Tailwind CSS v4 + Integrações customizadas de CSS Globals
-- **Parser de Arquivos:** `pdf-parse` e `officeparser` para processamento complexo
-- **Geração de IA:** Integração simplificada via `fetch` local com tratativas customizadas para provedores incompatíveis entre si.
+- **Frontend Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **DB and Vector Storage:** Supabase (PostgreSQL 15 + pgvector via Docker)
+- **Styling:** Tailwind CSS v4 + Custom CSS Globals integrations
+- **File Parsers:** `pdf-parse` and `officeparser` for complex processing
+- **AI Generation:** Simplified integration via local `fetch` with custom handling for mutually incompatible providers.
 
-## 📂 Visão Geral da Arquitetura
+## 📂 Architecture Overview
 
-- \`/supabase\`: Esquemas, Configurações em TOML, e Migrations do banco de dados (Tabelas e HNSW Indexes).
-- \`/src/app\`: Páginas da aplicação e Serverless API Routes (Upload, Spec, Prompts).
-- \`/src/components/ProviderPanel\`: Ferramenta visual flutuante com Test-Connection.
-- \`/src/lib/db\`: Abstrações SQL do SDK do `@supabase/supabase-js`.
-- \`/src/lib/embeddings\`: Orquestramento de vetores OpenRouter vs MiniMax com sistema de *Retry Control* inteligente.
-- \`/src/lib/parser\`: Ingestão assíncrona dos arquivos cru e picote deles (chunking) via algoritmos textuais.
+- `/supabase`: Schemas, TOML Configurations, and database Migrations (Tables and HNSW Indexes).
+- `/src/app`: Application pages and Serverless API Routes (Upload, Spec, Prompts).
+- `/src/components/ProviderPanel`: Floating visual tool with Test-Connection.
+- `/src/lib/db`: SQL abstractions from the `@supabase/supabase-js` SDK.
+- `/src/lib/embeddings`: Vector orchestration for OpenRouter vs MiniMax with intelligent *Retry Control* system.
+- `/src/lib/parser`: Async ingestion of raw files and chunking via textual algorithms.
 
-## 📋 Como Contribuir
+## 📋 How to Contribute
 
-Toda a conceptualização central está fundamentada na documentação arquitetural sob \`docs/prd/\`. Siga a filosofia **Spec-Driven Development** baseando suas interações com o Agente de Código lendo o \`CLAUDE.md\` incluso para absorver as constraints arquitetônicas.
+All core conceptualization is grounded in the architectural documentation under `docs/prd/`. Follow the **Spec-Driven Development** philosophy by basing your interactions with the Code Agent on reading the included `CLAUDE.md` to absorb the architectural constraints.
