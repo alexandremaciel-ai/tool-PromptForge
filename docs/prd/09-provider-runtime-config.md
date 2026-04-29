@@ -1,37 +1,37 @@
 # 09 — Provider & Runtime Configuration
 
-## Arquitetura de providers
+## Provider architecture
 
-A camada de provider é uma abstração central que isola a lógica de produto da lógica de vendor. Todo o sistema chama um provider genérico — nunca um vendor diretamente.
+The provider layer is a central abstraction that isolates product logic from vendor logic. The entire system calls a generic provider — never a vendor directly.
 
 ```
-[Frontend] → [API Route] → [Provider Selector] → [Provider Adapter] → [API do Vendor]
+[Frontend] → [API Route] → [Provider Selector] → [Provider Adapter] → [Vendor API]
                                    ↓ (fallback)
-                            [Provider Adapter 2] → [API do Vendor 2]
+                            [Provider Adapter 2] → [Vendor API 2]
 ```
 
 ---
 
-## Providers suportados
+## Supported providers
 
 ### 1. OpenRouter
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| Nome | OpenRouter |
-| Tipo de autenticação | Bearer token via header `Authorization` |
-| Variável de ambiente | `OPENROUTER_API_KEY` |
+| Name | OpenRouter |
+| Authentication type | Bearer token via `Authorization` header |
+| Environment variable | `OPENROUTER_API_KEY` |
 | Base URL | `https://openrouter.ai/api/v1/chat/completions` |
-| Modelo padrão | `anthropic/claude-3.5-sonnet` |
-| Modelos alternativos | `anthropic/claude-3-haiku`, `google/gemini-pro-1.5`, `meta-llama/llama-3.1-70b-instruct` |
-| Formato de request | OpenAI-compatible (`messages[]`, `model`, `temperature`, `max_tokens`) |
-| Formato de response | `choices[0].message.content` |
-| Capacidade de reasoning | Sim (depende do modelo selecionado) |
-| Rate limiting | Depende do plano do usuário |
-| Etapas permitidas | Todas (spec, persona, prompt, validação) |
-| Prioridade padrão | 1 (principal) |
+| Default model | `anthropic/claude-3.5-sonnet` |
+| Alternative models | `anthropic/claude-3-haiku`, `google/gemini-pro-1.5`, `meta-llama/llama-3.1-70b-instruct` |
+| Request format | OpenAI-compatible (`messages[]`, `model`, `temperature`, `max_tokens`) |
+| Response format | `choices[0].message.content` |
+| Reasoning capability | Yes (depends on the selected model) |
+| Rate limiting | Depends on user's plan |
+| Allowed stages | All (spec, persona, prompt, validation) |
+| Default priority | 1 (primary) |
 
-**Headers obrigatórios**:
+**Required headers**:
 ```
 Authorization: Bearer {OPENROUTER_API_KEY}
 HTTP-Referer: {APP_URL}
@@ -43,22 +43,22 @@ Content-Type: application/json
 
 ### 2. Anthropic
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| Nome | Anthropic |
-| Tipo de autenticação | API key via header `x-api-key` |
-| Variável de ambiente | `ANTHROPIC_API_KEY` |
+| Name | Anthropic |
+| Authentication type | API key via `x-api-key` header |
+| Environment variable | `ANTHROPIC_API_KEY` |
 | Base URL | `https://api.anthropic.com/v1/messages` |
-| Modelo padrão | `claude-3-5-sonnet-20241022` |
-| Modelos alternativos | `claude-3-haiku-20240307`, `claude-3-opus-20240229` |
-| Formato de request | Anthropic Messages API (`messages[]`, `model`, `max_tokens`, `system`) |
-| Formato de response | `content[0].text` |
-| Capacidade de reasoning | Sim (extended thinking disponível em modelos selecionados) |
-| Rate limiting | RPM e TPM conforme plano |
-| Etapas permitidas | Todas |
-| Prioridade padrão | 2 (fallback) |
+| Default model | `claude-3-5-sonnet-20241022` |
+| Alternative models | `claude-3-haiku-20240307`, `claude-3-opus-20240229` |
+| Request format | Anthropic Messages API (`messages[]`, `model`, `max_tokens`, `system`) |
+| Response format | `content[0].text` |
+| Reasoning capability | Yes (extended thinking available on selected models) |
+| Rate limiting | RPM and TPM per plan |
+| Allowed stages | All |
+| Default priority | 2 (fallback) |
 
-**Headers obrigatórios**:
+**Required headers**:
 ```
 x-api-key: {ANTHROPIC_API_KEY}
 anthropic-version: 2023-06-01
@@ -69,22 +69,22 @@ Content-Type: application/json
 
 ### 3. MiniMax
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| Nome | MiniMax |
-| Tipo de autenticação | Bearer token via header `Authorization` |
-| Variável de ambiente | `MINIMAX_API_KEY` |
+| Name | MiniMax |
+| Authentication type | Bearer token via `Authorization` header |
+| Environment variable | `MINIMAX_API_KEY` |
 | Base URL | `https://api.minimax.chat/v1/text/chatcompletion_v2` |
-| Modelo padrão | `abab6.5s-chat` |
-| Modelos alternativos | `abab6.5-chat`, `abab5.5-chat` |
-| Formato de request | MiniMax API (`messages[]`, `model`) |
-| Formato de response | `choices[0].message.content` |
-| Capacidade de reasoning | Limitada |
-| Rate limiting | Conforme plano |
-| Etapas permitidas | Todas (best effort) |
-| Prioridade padrão | 3 (secundário) |
+| Default model | `abab6.5s-chat` |
+| Alternative models | `abab6.5-chat`, `abab5.5-chat` |
+| Request format | MiniMax API (`messages[]`, `model`) |
+| Response format | `choices[0].message.content` |
+| Reasoning capability | Limited |
+| Rate limiting | Per plan |
+| Allowed stages | All (best effort) |
+| Default priority | 3 (secondary) |
 
-**Headers obrigatórios**:
+**Required headers**:
 ```
 Authorization: Bearer {MINIMAX_API_KEY}
 Content-Type: application/json
@@ -92,149 +92,149 @@ Content-Type: application/json
 
 ---
 
-### 4. Claude Subscription (modo opcional)
+### 4. Claude Subscription (optional mode)
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| Nome | claude-subscription |
-| Tipo de autenticação | Sessão local (sem API key explícita) |
-| Variável de ambiente | `CLAUDE_SUBSCRIPTION_ENABLED` (boolean) |
-| Base URL | Determinada pelo ambiente local (CLI proxy ou integração direta) |
-| Modelo padrão | Modelo ativo na subscrição do usuário |
-| Modelos alternativos | Nenhum (depende da subscrição) |
-| Formato de request | A definir conforme disponibilidade do ambiente |
-| Capacidade de reasoning | Depende do modelo na subscrição |
-| Rate limiting | Depende do plano pessoal |
-| Etapas permitidas | Todas |
-| Prioridade padrão | Nenhuma (deve ser habilitado explicitamente) |
+| Name | claude-subscription |
+| Authentication type | Local session (no explicit API key) |
+| Environment variable | `CLAUDE_SUBSCRIPTION_ENABLED` (boolean) |
+| Base URL | Determined by local environment (CLI proxy or direct integration) |
+| Default model | Active model in user's subscription |
+| Alternative models | None (depends on subscription) |
+| Request format | To be defined based on environment availability |
+| Reasoning capability | Depends on the model in subscription |
+| Rate limiting | Depends on personal plan |
+| Allowed stages | All |
+| Default priority | None (must be explicitly enabled) |
 
-**Regras especiais**:
-- Este modo é **opcional e não garantido**.
-- Disponibilidade depende do ambiente local do usuário.
-- Se `CLAUDE_SUBSCRIPTION_ENABLED=true` mas o ambiente não suporta, o adapter retorna `isAvailable: false` silenciosamente.
-- **Nunca** deve ser o único provider configurado.
-- Sempre deve existir fallback para provider por API key.
-- A UX deve exibir "Modo local (subscrição)" quando ativo.
+**Special rules**:
+- This mode is **optional and not guaranteed**.
+- Availability depends on the user's local environment.
+- If `CLAUDE_SUBSCRIPTION_ENABLED=true` but the environment doesn't support it, the adapter returns `isAvailable: false` silently.
+- **Never** should be the only configured provider.
+- There must always be a fallback to an API-key-based provider.
+- The UX should display "Local mode (subscription)" when active.
 
 ---
 
-## Responsabilidades da camada de provider
+## Provider layer responsibilities
 
-| Responsabilidade | Descrição |
+| Responsibility | Description |
 |---|---|
-| Abstração | Interface comum para todos os vendors |
-| Seleção | Escolher provider com base na preferência do usuário |
-| Fallback | Tentar provider alternativo em caso de falha |
-| Normalização | Converter request/response de cada vendor para formato interno |
-| Disponibilidade | Verificar se provider está configurado e acessível |
-| Identificação | Incluir nome do provider no resultado |
-| Isolamento | Lógica de vendor isolada em adapters, sem condicional espalhado |
+| Abstraction | Common interface for all vendors |
+| Selection | Choose provider based on user preference |
+| Fallback | Try alternative provider on failure |
+| Normalization | Convert each vendor's request/response to internal format |
+| Availability | Check if provider is configured and accessible |
+| Identification | Include provider name in the result |
+| Isolation | Vendor logic isolated in adapters, no scattered conditionals |
 
 ---
 
-## Seleção de modelo por etapa
+## Model selection per stage
 
-O usuário pode configurar provider por etapa ou globalmente:
+The user can configure provider per stage or globally:
 
-| Etapa | Provider sugerido | Justificativa |
+| Stage | Suggested provider | Rationale |
 |---|---|---|
-| Geração de spec | Provider padrão | Requer boa compreensão de texto |
-| Geração de persona | Provider padrão | Requer criatividade e estrutura |
-| Geração de prompt | Provider padrão | Tarefa mais complexa |
-| Validação | Provider padrão ou fallback | Pode usar modelo mais barato |
+| Spec generation | Default provider | Requires good text comprehension |
+| Persona generation | Default provider | Requires creativity and structure |
+| Prompt generation | Default provider | Most complex task |
+| Validation | Default or fallback provider | Can use a cheaper model |
 
-No MVP, a configuração será **global** (mesmo provider para todas as etapas). Seleção por etapa é extensão futura.
-
----
-
-## Lógica de fallback
-
-```
-1. Tentar provider preferido do usuário
-2. Se falha (timeout, erro 4xx/5xx, indisponível):
-   2a. Tentar próximo provider por prioridade
-   2b. Se nenhum disponível: retornar erro com mensagem clara
-3. Registrar qual provider foi usado no resultado
-4. Se fallback foi acionado, indicar na resposta
-```
-
-**Comportamento de retry**:
-- 1 retry para timeout (após 30s)
-- Sem retry para erros 4xx (API key inválida, rate limit)
-- 1 retry para erros 5xx
-- Backoff de 2 segundos entre retries
+In the MVP, the configuration will be **global** (same provider for all stages). Per-stage selection is a future extension.
 
 ---
 
-## UX de configuração
+## Fallback logic
 
-### Painel de providers (modal/sidebar)
+```
+1. Try user's preferred provider
+2. If fails (timeout, 4xx/5xx error, unavailable):
+   2a. Try next provider by priority
+   2b. If none available: return error with clear message
+3. Record which provider was used in the result
+4. If fallback was triggered, indicate in the response
+```
+
+**Retry behavior**:
+- 1 retry for timeout (after 30s)
+- No retry for 4xx errors (invalid API key, rate limit)
+- 1 retry for 5xx errors
+- 2-second backoff between retries
+
+---
+
+## Configuration UX
+
+### Provider panel (modal/sidebar)
 
 ```
 ┌──────────────────────────────────────┐
-│  ⚙️  Configuração de Providers       │
+│  ⚙️  Provider Configuration          │
 ├──────────────────────────────────────┤
 │                                      │
 │  ┌────────────────────────────────┐  │
-│  │ ● OpenRouter        ✅ Ativo   │  │
+│  │ ● OpenRouter        ✅ Active  │  │
 │  │   API Key: ••••••••k3f9       │  │
-│  │   Modelo: claude-3.5-sonnet   │  │
-│  │   [Testar] [Remover]          │  │
+│  │   Model: claude-3.5-sonnet    │  │
+│  │   [Test] [Remove]             │  │
 │  └────────────────────────────────┘  │
 │                                      │
 │  ┌────────────────────────────────┐  │
-│  │ ○ Anthropic     ⚠️ Não config. │  │
+│  │ ○ Anthropic    ⚠️ Not config.  │  │
 │  │   API Key: [_______________]  │  │
-│  │   [Adicionar]                 │  │
+│  │   [Add]                       │  │
 │  └────────────────────────────────┘  │
 │                                      │
 │  ┌────────────────────────────────┐  │
-│  │ ○ MiniMax       ⚠️ Não config. │  │
+│  │ ○ MiniMax      ⚠️ Not config.  │  │
 │  │   API Key: [_______________]  │  │
-│  │   [Adicionar]                 │  │
+│  │   [Add]                       │  │
 │  └────────────────────────────────┘  │
 │                                      │
 │  ┌────────────────────────────────┐  │
-│  │ ○ Claude (Local) ⚠️ Indisponível│ │
-│  │   Requer ambiente compatível  │  │
+│  │ ○ Claude (Local) ⚠️ Unavailable│  │
+│  │   Requires compatible env.    │  │
 │  └────────────────────────────────┘  │
 │                                      │
-│  Provider padrão: [OpenRouter ▼]     │
-│  Fallback:        [Anthropic ▼]      │
+│  Default provider: [OpenRouter ▼]    │
+│  Fallback:         [Anthropic ▼]     │
 │                                      │
-│              [Salvar]                │
+│              [Save]                  │
 └──────────────────────────────────────┘
 ```
 
-### Badge no header
+### Header badge
 
 ```
 ┌──────────────────────────────────────────────┐
-│  🔥 PromptForge    [Upload][Spec]...  ⚡ OpenRouter (ativo)  ⚙️ │
+│  🔥 PromptForge    [Upload][Spec]...  ⚡ OpenRouter (active)  ⚙️ │
 └──────────────────────────────────────────────┘
 ```
 
 ---
 
-## Mensagens de erro por provider
+## Error messages per provider
 
-| Situação | Mensagem |
+| Situation | Message |
 |---|---|
-| API key ausente | "Configure uma API key para {provider} nas configurações." |
-| API key inválida | "A API key de {provider} não é válida. Verifique e tente novamente." |
-| Rate limit atingido | "Limite de requisições atingido em {provider}. Aguarde ou use outro provider." |
-| Provider fora do ar | "O provider {provider} está temporariamente indisponível. Usando {fallback}." |
-| Nenhum provider disponível | "Nenhum provider está configurado ou disponível. Acesse as configurações para adicionar uma API key." |
-| Timeout | "A requisição para {provider} excedeu o tempo limite. Tentando {fallback}..." |
-| claude-subscription indisponível | "O modo de subscrição local não está disponível neste ambiente. Use um provider por API key." |
+| API key missing | "Configure an API key for {provider} in settings." |
+| Invalid API key | "The {provider} API key is not valid. Check and try again." |
+| Rate limit reached | "Request limit reached at {provider}. Wait or use another provider." |
+| Provider outage | "Provider {provider} is temporarily unavailable. Using {fallback}." |
+| No provider available | "No provider is configured or available. Go to settings to add an API key." |
+| Timeout | "Request to {provider} exceeded the time limit. Trying {fallback}..." |
+| claude-subscription unavailable | "Local subscription mode is not available in this environment. Use an API-key-based provider." |
 
 ---
 
-## Comportamento em indisponibilidade
+## Behavior on unavailability
 
-| Cenário | Comportamento |
+| Scenario | Behavior |
 |---|---|
-| 0 providers configurados | Banner persistente. Botões de geração desabilitados. |
-| Provider primário cai | Fallback automático + badge muda + toast informativo |
-| Todos os providers caem | Mensagem de erro clara. Sugestão de verificar configuração. |
-| claude-subscription ligado mas indisponível | Ignorar silenciosamente, usar próximo provider |
+| 0 providers configured | Persistent banner. Generation buttons disabled. |
+| Primary provider goes down | Automatic fallback + badge changes + informative toast |
+| All providers go down | Clear error message. Suggestion to check configuration. |
+| claude-subscription enabled but unavailable | Silently ignored, use next provider |

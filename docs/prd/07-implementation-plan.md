@@ -1,244 +1,244 @@
 # 07 — Implementation Plan
 
-## Visão geral das fases
+## Phase overview
 
 ```
-Fase 0: Setup           → Projeto, Docker, variáveis de ambiente
-Fase 1: Provider Layer  → Abstração de providers, adapters, seleção, fallback
-Fase 2: Ingestão        → Upload, parsing, chunking
-Fase 3: Spec Engine     → Geração de spec de prompt
-Fase 4: Persona Engine  → Designer de persona, sugestão, edição
-Fase 5: Prompt Builder  → Geração de prompt final
-Fase 6: Validação       → Checklist de consistência, score
-Fase 7: Export          → Exportação em Markdown e JSON
-Fase 8: Polish          → UX, loading states, animações, responsividade
+Phase 0: Setup           → Project, Docker, environment variables
+Phase 1: Provider Layer  → Provider abstraction, adapters, selection, fallback
+Phase 2: Ingestion       → Upload, parsing, chunking
+Phase 3: Spec Engine     → Prompt spec generation
+Phase 4: Persona Engine  → Persona designer, suggestion, editing
+Phase 5: Prompt Builder  → Final prompt generation
+Phase 6: Validation      → Consistency checklist, score
+Phase 7: Export          → Export in Markdown and JSON
+Phase 8: Polish          → UX, loading states, animations, responsiveness
 ```
 
 ---
 
-## Fase 0 — Setup do projeto
+## Phase 0 — Project setup
 
-**Objetivo**: Projeto funcional com Next.js, Docker e variáveis de ambiente.
+**Objective**: Functional project with Next.js, Docker, and environment variables.
 
-**Dependências**: Nenhuma  
+**Dependencies**: None  
 
-**Entregáveis**:
-- Projeto Next.js 14 inicializado com TypeScript e Tailwind
-- Dockerfile e docker-compose.yml funcionais
-- `.env.example` com todas as variáveis documentadas
-- Layout global com header, provider badge (placeholder) e step indicator
-- Página principal com estrutura de seções (vazias)
+**Deliverables**:
+- Next.js 14 project initialized with TypeScript strict and Tailwind
+- Functional Dockerfile and docker-compose.yml
+- `.env.example` with all variables documented
+- Global layout with header, provider badge (placeholder), and step indicator
+- Main page with section structure (empty)
 
-**Definição de pronto**:
-- `docker-compose up` inicia a aplicação na porta 3000.
-- Página principal carrega com layout visual.
-- Variáveis de ambiente são validadas no startup.
-
----
-
-## Fase 1 — Provider Layer
-
-**Objetivo**: Camada de abstração de providers funcional com pelo menos 1 adapter.
-
-**Dependências**: Fase 0  
-
-**Entregáveis**:
-- Interface `ProviderAdapter` definida
-- Adapter OpenRouter implementado
-- Adapter Anthropic implementado
-- Adapter MiniMax implementado (estrutura)
-- Adapter claude-subscription implementado (estrutura, opcional)
-- Provider registry e selector com fallback
-- API route `/api/provider/config` para salvar/ler configuração
-- API route `/api/provider/test` para testar conexão
-- Componente `ProviderPanel` funcional no frontend
-- Badge de provider ativo no header
-
-**Definição de pronto**:
-- Pelo menos 1 provider pode ser configurado e testado.
-- Fallback funciona entre providers configurados.
-- Provider ativo é exibido na interface.
-- Secrets nunca aparecem no frontend.
+**Definition of done**:
+- `docker-compose up` starts the application on port 3000.
+- Main page loads with visual layout.
+- Environment variables are validated at startup.
 
 ---
 
-## Fase 2 — Ingestão de arquivos
+## Phase 1 — Provider Layer
 
-**Objetivo**: Upload, extração e chunking de PDF, TXT e MD.
+**Objective**: Functional provider abstraction layer with at least 1 adapter.
 
-**Dependências**: Fase 0  
+**Dependencies**: Phase 0  
 
-**Entregáveis**:
-- Componente `FileDropZone` com drag & drop
-- Componente `FileCard` com metadata
-- API route `/api/upload` para receber e processar arquivos
-- Parser de PDF (`pdf-parse`)
-- Parser de TXT e MD (leitura direta)
-- Chunker de texto
-- Componente `ChunkPreview` para exibir trechos
-- Validação de tipo e tamanho
+**Deliverables**:
+- `ProviderAdapter` interface defined
+- OpenRouter adapter implemented
+- Anthropic adapter implemented
+- MiniMax adapter implemented (structure)
+- claude-subscription adapter implemented (structure, optional)
+- Provider registry and selector with fallback
+- API route `/api/provider/config` to save/read configuration
+- API route `/api/provider/test` to test connection
+- Functional `ProviderPanel` component on the frontend
+- Active provider badge in the header
 
-**Definição de pronto**:
-- Upload de PDF, TXT e MD funciona.
-- Texto é extraído e chunks são exibidos.
-- Erros de arquivo são tratados com mensagem clara.
+**Definition of done**:
+- At least 1 provider can be configured and tested.
+- Fallback works between configured providers.
+- Active provider is displayed in the interface.
+- Secrets never appear on the frontend.
 
 ---
 
-## Fase 3 — Spec Engine
+## Phase 2 — File ingestion
 
-**Objetivo**: Gerar spec de prompt a partir do conhecimento.
+**Objective**: Upload, extraction, and chunking of PDF, TXT, and MD.
 
-**Dependências**: Fase 1 + Fase 2  
+**Dependencies**: Phase 0  
 
-**Entregáveis**:
-- Meta-prompt `spec-generator` implementado
+**Deliverables**:
+- `FileDropZone` component with drag & drop
+- `FileCard` component with metadata
+- API route `/api/upload` to receive and process files
+- PDF parser (`pdf-parse`)
+- TXT and MD parser (direct read)
+- Text chunker
+- `ChunkPreview` component to display excerpts
+- Type and size validation
+
+**Definition of done**:
+- Upload of PDF, TXT, and MD works.
+- Text is extracted and chunks are displayed.
+- File errors are handled with clear messages.
+
+---
+
+## Phase 3 — Spec Engine
+
+**Objective**: Generate prompt spec from knowledge.
+
+**Dependencies**: Phase 1 + Phase 2  
+
+**Deliverables**:
+- `spec-generator` meta-prompt implemented
 - API route `/api/generate/spec`
-- Componente `ObjectiveInput`
-- Componente `SpecCard` com visualização da spec gerada
-- Componente `SpecEditor` para edição
-- Loading state com skeleton
+- `ObjectiveInput` component
+- `SpecCard` component with generated spec visualization
+- `SpecEditor` component for editing
+- Loading state with skeleton
 
-**Definição de pronto**:
-- Spec é gerada a partir de conhecimento + objetivo.
-- Spec é editável.
-- Provider ativo é indicado durante geração.
-- Fallback funciona se provider primário falhar.
+**Definition of done**:
+- Spec is generated from knowledge + objective.
+- Spec is editable.
+- Active provider is indicated during generation.
+- Fallback works if primary provider fails.
 
 ---
 
-## Fase 4 — Persona Engine
+## Phase 4 — Persona Engine
 
-**Objetivo**: Feature completa de criação e edição de persona.
+**Objective**: Full persona creation and editing feature.
 
-**Dependências**: Fase 3  
+**Dependencies**: Phase 3  
 
-**Entregáveis**:
-- Meta-prompt `persona-generator` implementado
+**Deliverables**:
+- `persona-generator` meta-prompt implemented
 - API route `/api/generate/persona`
-- Componente `PersonaDesigner` com todos os campos
-- Componente `ToneSlider` (sliders de formalidade, empatia, objetividade)
-- Componente `VocabularyChips` (vocabulário preferido e proibido)
-- Componente `ExamplePreview` (exemplos bons e ruins)
-- Sugestão automática de persona
-- Edição manual de todos os campos
+- `PersonaDesigner` component with all fields
+- `ToneSlider` component (formality, empathy, objectivity sliders)
+- `VocabularyChips` component (preferred and prohibited vocabulary)
+- `ExamplePreview` component (good and bad examples)
+- Automatic persona suggestion
+- Manual editing of all fields
 
-**Definição de pronto**:
-- Persona é sugerida automaticamente com base no conhecimento e spec.
-- Todos os campos são editáveis.
-- Exemplos e anti-exemplos são gerados.
-- Interface é visualmente impactante (sliders, chips, preview).
+**Definition of done**:
+- Persona is automatically suggested based on knowledge and spec.
+- All fields are editable.
+- Examples and anti-examples are generated.
+- Interface is visually impactful (sliders, chips, preview).
 
 ---
 
-## Fase 5 — Prompt Builder
+## Phase 5 — Prompt Builder
 
-**Objetivo**: Gerar prompt final combinando spec + persona + conhecimento.
+**Objective**: Generate final prompt combining spec + persona + knowledge.
 
-**Dependências**: Fase 3 + Fase 4  
+**Dependencies**: Phase 3 + Phase 4  
 
-**Entregáveis**:
-- Meta-prompt `prompt-builder` implementado
+**Deliverables**:
+- `prompt-builder` meta-prompt implemented
 - API route `/api/generate/prompt`
-- Componente `PromptOutput` com syntax highlighting
-- Componente `PromptActions` (copiar, regenerar, editar)
-- Referências ao conhecimento-fonte
+- `PromptOutput` component with syntax highlighting
+- `PromptActions` component (copy, regenerate, edit)
+- References to source knowledge
 - Loading state
 
-**Definição de pronto**:
-- Prompt final é gerado e exibido com formatação profissional.
-- Prompt reflete spec e persona.
-- Ações de copiar e regenerar funcionam.
+**Definition of done**:
+- Final prompt is generated and displayed with professional formatting.
+- Prompt reflects spec and persona.
+- Copy and regenerate actions work.
 
 ---
 
-## Fase 6 — Validação
+## Phase 6 — Validation
 
-**Objetivo**: Validar consistência entre spec, persona e prompt.
+**Objective**: Validate consistency between spec, persona, and prompt.
 
-**Dependências**: Fase 5  
+**Dependencies**: Phase 5  
 
-**Entregáveis**:
-- Meta-prompt `consistency-validator` implementado
+**Deliverables**:
+- `consistency-validator` meta-prompt implemented
 - API route `/api/generate/validate`
-- Componente `ValidationCard` com checklist visual
-- Componente `ScoreIndicator`
-- Sugestões de melhoria
+- `ValidationCard` component with visual checklist
+- `ScoreIndicator` component
+- Improvement suggestions
 
-**Definição de pronto**:
-- Validação é executada automaticamente após geração do prompt.
-- Checklist exibe ✅/❌ para cada critério.
-- Score geral é calculado e exibido.
-- Sugestões de melhoria são apresentadas.
+**Definition of done**:
+- Validation runs automatically after prompt generation.
+- Checklist displays ✅/❌ for each criterion.
+- Overall score is calculated and displayed.
+- Improvement suggestions are presented.
 
 ---
 
-## Fase 7 — Export
+## Phase 7 — Export
 
-**Objetivo**: Exportar todos os artefatos em Markdown e JSON.
+**Objective**: Export all artifacts in Markdown and JSON.
 
-**Dependências**: Fase 5 + Fase 6  
+**Dependencies**: Phase 5 + Phase 6  
 
-**Entregáveis**:
+**Deliverables**:
 - API route `/api/export`
-- Componente `ExportButtons`
-- Geração de arquivo Markdown consolidado
-- Geração de arquivo JSON estruturado
-- Download automático
+- `ExportButtons` component
+- Consolidated Markdown file generation
+- Structured JSON file generation
+- Automatic download
 
-**Definição de pronto**:
-- Export em MD funciona e gera arquivo legível.
-- Export em JSON funciona e gera estrutura completa.
-- Todos os artefatos são incluídos (spec, persona, prompt, validação).
-
----
-
-## Fase 8 — Polish
-
-**Objetivo**: Polir UX, animações, responsividade e experiência geral.
-
-**Dependências**: Todas as fases anteriores  
-
-**Entregáveis**:
-- Loading states com skeleton e animações em todas as etapas
-- Transições suaves entre estados
-- Empty states com orientação
-- Error states com ações sugeridas
-- Responsividade básica (desktop-first, tablet aceitável)
-- Dark mode ou tema visual refinado
-- Micro-animações em interações
-
-**Definição de pronto**:
-- A demo parece produto real.
-- Nenhum estado de loading/erro/vazio está sem tratamento.
-- A experiência é fluida e gravável em vídeo.
+**Definition of done**:
+- MD export works and generates a readable file.
+- JSON export works and generates a complete structure.
+- All artifacts are included (spec, persona, prompt, validation).
 
 ---
 
-## Ordem de execução
+## Phase 8 — Polish
+
+**Objective**: Polish UX, animations, responsiveness, and overall experience.
+
+**Dependencies**: All previous phases  
+
+**Deliverables**:
+- Loading states with skeleton and animations in all steps
+- Smooth transitions between states
+- Empty states with guidance
+- Error states with suggested actions
+- Basic responsiveness (desktop-first, tablet acceptable)
+- Dark mode or refined visual theme
+- Micro-animations on interactions
+
+**Definition of done**:
+- The demo looks like a real product.
+- No loading/error/empty state is left untreated.
+- The experience is fluid and recordable on video.
+
+---
+
+## Execution order
 
 ```
-Fase 0 ────→ Fase 1 ────→ Fase 3 ────→ Fase 5 ────→ Fase 7
+Phase 0 ────→ Phase 1 ────→ Phase 3 ────→ Phase 5 ────→ Phase 7
                 ↓              ↓              ↓
-             Fase 2        Fase 4        Fase 6 ────→ Fase 8
+             Phase 2        Phase 4        Phase 6 ────→ Phase 8
 ```
 
-Fases 1 e 2 podem ser parcialmente paralelas (provider layer e ingestão são independentes).
-Fases 3 depende de 1+2. Fase 4 depende de 3. Fase 5 depende de 3+4.
-Fase 8 é transversal, mas só faz sentido no final.
+Phases 1 and 2 can be partially parallel (provider layer and ingestion are independent).
+Phase 3 depends on 1+2. Phase 4 depends on 3. Phase 5 depends on 3+4.
+Phase 8 is cross-cutting, but only makes sense at the end.
 
 ---
 
-## Estimativa de esforço
+## Effort estimate
 
-| Fase | Esforço estimado |
+| Phase | Estimated effort |
 |---|---|
-| Fase 0 — Setup | Pequeno |
-| Fase 1 — Provider Layer | Médio |
-| Fase 2 — Ingestão | Médio |
-| Fase 3 — Spec Engine | Médio |
-| Fase 4 — Persona Engine | Grande (feature principal) |
-| Fase 5 — Prompt Builder | Médio |
-| Fase 6 — Validação | Médio |
-| Fase 7 — Export | Pequeno |
-| Fase 8 — Polish | Médio |
+| Phase 0 — Setup | Small |
+| Phase 1 — Provider Layer | Medium |
+| Phase 2 — Ingestion | Medium |
+| Phase 3 — Spec Engine | Medium |
+| Phase 4 — Persona Engine | Large (main feature) |
+| Phase 5 — Prompt Builder | Medium |
+| Phase 6 — Validation | Medium |
+| Phase 7 — Export | Small |
+| Phase 8 — Polish | Medium |

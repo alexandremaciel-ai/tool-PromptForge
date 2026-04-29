@@ -1,208 +1,208 @@
 # 02 — User Flow
 
-## Visão geral do fluxo
+## Flow overview
 
 ```
-[Upload] → [Extração] → [Spec] → [Persona] → [Prompt] → [Validação] → [Export]
-                                                   ↑
-                                          [Provider Config]
+[Upload] → [Extraction] → [Spec] → [Persona] → [Prompt] → [Validation] → [Export]
+                                                    ↑
+                                         [Provider Config]
 ```
 
-O fluxo é linear com uma camada lateral de configuração de provider acessível a qualquer momento.
+The flow is linear with a lateral layer of provider configuration accessible at any time.
 
 ---
 
-## Fluxo principal ponta a ponta
+## Main end-to-end flow
 
-### Etapa 1 — Landing e configuração inicial
-**Tela**: Tela principal (single-page application com seções progressivas)
+### Step 1 — Landing and initial configuration
+**Screen**: Main screen (single-page application with progressive sections)
 
-1. Usuário abre a aplicação.
-2. Sistema verifica se há providers configurados.
-3. Se nenhum provider configurado → exibe banner de configuração com CTA claro.
-4. Se provider configurado → exibe indicador de provider ativo no header.
-5. Usuário pode abrir painel lateral de configuração de provider a qualquer momento.
+1. User opens the application.
+2. System checks if providers are configured.
+3. If no provider configured → displays configuration banner with clear CTA.
+4. If provider configured → displays active provider indicator in the header.
+5. User can open the provider configuration side panel at any time.
 
-**Entrada**: Nenhuma  
-**Saída**: Estado de provider resolvido  
-
----
-
-### Etapa 2 — Upload de conhecimento
-**Seção**: Área de upload (drag & drop + botão de seleção)
-
-1. Usuário arrasta ou seleciona arquivos (PDF, TXT, MD).
-2. Sistema valida tipo e tamanho (máx. 10 MB por arquivo, máx. 3 arquivos).
-3. Sistema exibe card do arquivo: nome, tipo, tamanho, ícone.
-4. Sistema inicia extração de texto e mostra progress bar.
-5. Após extração, sistema exibe preview dos trechos extraídos com contagem de chunks.
-
-**Entrada**: Arquivo(s)  
-**Saída**: Texto extraído + metadata + chunks  
-
-**Erro**: Arquivo inválido → mensagem: "Formato não suportado. Use PDF, TXT ou MD."  
-**Erro**: Arquivo muito grande → mensagem: "Arquivo excede o limite de 10 MB."  
-**Erro**: Falha de extração → mensagem: "Não foi possível extrair texto deste arquivo. Verifique se o PDF contém texto selecionável."  
-
-**Empty state**: "Arraste um arquivo ou clique para selecionar. Formatos aceitos: PDF, TXT, Markdown."  
+**Input**: None  
+**Output**: Resolved provider state  
 
 ---
 
-### Etapa 3 — Definição de objetivo
-**Seção**: Campo de texto com label claro
+### Step 2 — Knowledge upload
+**Section**: Upload area (drag & drop + file selection button)
 
-1. Sistema sugere objetivo com base no conteúdo extraído.
-2. Usuário pode aceitar a sugestão ou editar livremente.
-3. Campo obrigatório para avançar.
+1. User drags or selects files (PDF, TXT, MD).
+2. System validates type and size (max. 10 MB per file, max. 3 files).
+3. System displays file card: name, type, size, icon.
+4. System starts text extraction and shows progress bar.
+5. After extraction, system displays preview of extracted excerpts with chunk count.
 
-**Entrada**: Texto livre descrevendo o objetivo do prompt  
-**Saída**: Objetivo definido  
+**Input**: File(s)  
+**Output**: Extracted text + metadata + chunks  
 
-**Exemplo de sugestão**: "Criar um agente de suporte que responda dúvidas frequentes com base na documentação enviada."
+**Error**: Invalid file → message: "Unsupported format. Use PDF, TXT, or MD."  
+**Error**: File too large → message: "File exceeds the 10 MB limit."  
+**Error**: Extraction failure → message: "Could not extract text from this file. Check if the PDF contains selectable text."  
+
+**Empty state**: "Drag a file or click to select. Accepted formats: PDF, TXT, Markdown."  
 
 ---
 
-### Etapa 4 — Geração de spec ✨ (momento wow #1)
-**Seção**: Card de spec gerada com loading progressivo
+### Step 3 — Objective definition
+**Section**: Text field with clear label
 
-1. Usuário clica "Gerar Spec".
-2. Sistema envia conhecimento + objetivo ao provider ativo.
-3. Loading: skeleton com animação pulse enquanto gera.
-4. Sistema exibe spec estruturada:
-   - Objetivo do prompt
-   - Inputs esperados
-   - Contexto obrigatório
-   - Restrições
+1. System suggests an objective based on the extracted content.
+2. User can accept the suggestion or edit freely.
+3. Required field to proceed.
+
+**Input**: Free text describing the prompt objective  
+**Output**: Defined objective  
+
+**Example suggestion**: "Create a support agent that answers frequently asked questions based on the submitted documentation."
+
+---
+
+### Step 4 — Spec generation ✨ (wow moment #1)
+**Section**: Generated spec card with progressive loading
+
+1. User clicks "Generate Spec".
+2. System sends knowledge + objective to the active provider.
+3. Loading: skeleton with pulse animation while generating.
+4. System displays structured spec:
+   - Prompt objective
+   - Expected inputs
+   - Required context
+   - Constraints
    - Guardrails
-   - Formato de saída esperado
-5. Usuário pode editar qualquer campo da spec.
-6. Indicador de provider ativo visível durante a geração.
+   - Expected output format
+5. User can edit any spec field.
+6. Active provider indicator visible during generation.
 
-**Entrada**: Conhecimento extraído + objetivo  
-**Saída**: Spec de prompt editável  
+**Input**: Extracted knowledge + objective  
+**Output**: Editable prompt spec  
 
-**Loading**: Skeleton com seções aparecendo progressivamente.  
-**Erro de provider**: "Não foi possível conectar ao provider [nome]. Tentando fallback..." → tenta provider alternativo → se falhar: "Nenhum provider disponível. Verifique sua configuração."  
-
----
-
-### Etapa 5 — Criação de persona ✨ (momento wow #2)
-**Seção**: Painel visual de persona com campos interativos
-
-1. Sistema sugere persona com base no conhecimento e na spec.
-2. Usuário vê e edita:
-   - Nome do agente
-   - Papel
-   - Tom principal (seletor visual: Formal ↔ Casual)
-   - Personalidade (tags selecionáveis)
-   - Formalidade (slider 1-5)
-   - Empatia (slider 1-5)
-   - Objetividade (slider 1-5)
-   - Vocabulário preferido (chips editáveis)
-   - Vocabulário proibido (chips editáveis)
-   - Postura diante de incerteza (dropdown)
-   - Limites comportamentais (lista editável)
-3. Seção de exemplos: sistema gera exemplos de respostas boas e ruins com base na persona.
-4. Usuário pode editar exemplos.
-
-**Entrada**: Spec + conhecimento  
-**Saída**: Persona completa especificada  
-
-**Empty state**: "Defina a identidade do seu agente. O sistema vai sugerir uma persona com base no conhecimento e na spec."  
+**Loading**: Skeleton with sections appearing progressively.  
+**Provider error**: "Could not connect to provider [name]. Trying fallback..." → tries alternative provider → if it fails: "No provider available. Check your configuration."  
 
 ---
 
-### Etapa 6 — Geração de prompt final ✨ (momento wow #3)
-**Seção**: Card de prompt gerado com syntax highlighting
+### Step 5 — Persona creation ✨ (wow moment #2)
+**Section**: Visual persona panel with interactive fields
 
-1. Usuário clica "Gerar Prompt Final".
-2. Sistema combina spec + persona + conhecimento.
-3. Loading: skeleton com animação.
-4. Sistema exibe prompt final formatado:
-   - System prompt completo
-   - Guardrails integrados
-   - Exemplos few-shot derivados da persona
-   - Referências ao conhecimento-fonte
-5. Indicador de provider ativo.
-6. Usuário pode copiar, editar ou regenerar.
+1. System suggests persona based on knowledge and spec.
+2. User views and edits:
+   - Agent name
+   - Role
+   - Main tone (visual selector: Formal ↔ Casual)
+   - Personality (selectable tags)
+   - Formality (slider 1–5)
+   - Empathy (slider 1–5)
+   - Objectivity (slider 1–5)
+   - Preferred vocabulary (editable chips)
+   - Prohibited vocabulary (editable chips)
+   - Stance on uncertainty (dropdown)
+   - Behavioral limits (editable list)
+3. Examples section: system generates examples of good and bad responses based on persona.
+4. User can edit examples.
 
-**Entrada**: Spec + persona + conhecimento  
-**Saída**: Prompt final pronto para uso  
+**Input**: Spec + knowledge  
+**Output**: Fully specified persona  
 
----
-
-### Etapa 7 — Validação
-**Seção**: Card de validação com indicadores visuais
-
-1. Sistema executa checklist de consistência automaticamente:
-   - Persona refletida no prompt? ✅/❌
-   - Guardrails presentes? ✅/❌
-   - Formato de saída definido? ✅/❌
-   - Exemplos coerentes com tom? ✅/❌
-   - Limites comportamentais respeitados? ✅/❌
-   - Vocabulário proibido ausente? ✅/❌
-2. Score geral: porcentagem ou nota A/B/C.
-3. Sugestões de melhoria, quando aplicável.
-
-**Entrada**: Prompt final + persona + spec  
-**Saída**: Relatório de validação  
+**Empty state**: "Define your agent's identity. The system will suggest a persona based on the knowledge and spec."  
 
 ---
 
-### Etapa 8 — Export
-**Seção**: Botões de exportação
+### Step 6 — Final prompt generation ✨ (wow moment #3)
+**Section**: Generated prompt card with syntax highlighting
 
-1. Usuário escolhe formato: Markdown ou JSON.
-2. Sistema gera arquivo com todos os artefatos:
+1. User clicks "Generate Final Prompt".
+2. System combines spec + persona + knowledge.
+3. Loading: skeleton with animation.
+4. System displays formatted final prompt:
+   - Complete system prompt
+   - Integrated guardrails
+   - Few-shot examples derived from persona
+   - References to source knowledge
+5. Active provider indicator.
+6. User can copy, edit, or regenerate.
+
+**Input**: Spec + persona + knowledge  
+**Output**: Final prompt ready for use  
+
+---
+
+### Step 7 — Validation
+**Section**: Validation card with visual indicators
+
+1. System runs consistency checklist automatically:
+   - Persona reflected in prompt? ✅/❌
+   - Guardrails present? ✅/❌
+   - Output format defined? ✅/❌
+   - Examples consistent with tone? ✅/❌
+   - Behavioral limits respected? ✅/❌
+   - Prohibited vocabulary absent? ✅/❌
+2. Overall score: percentage or A/B/C grade.
+3. Improvement suggestions, when applicable.
+
+**Input**: Final prompt + persona + spec  
+**Output**: Validation report  
+
+---
+
+### Step 8 — Export
+**Section**: Export buttons
+
+1. User chooses format: Markdown or JSON.
+2. System generates file with all artifacts:
    - Spec
    - Persona
-   - Prompt final
-   - Validação
-3. Download automático.
+   - Final prompt
+   - Validation
+3. Automatic download.
 
-**Entrada**: Artefatos gerados  
-**Saída**: Arquivo .md ou .json  
-
----
-
-## Fluxo lateral — Configuração de provider
-
-Acessível a qualquer momento via ícone de engrenagem no header.
-
-1. Usuário abre painel lateral/modal de configuração.
-2. Vê lista de providers com status:
-   - OpenRouter: ✅ Configurado / ⚠️ Não configurado
-   - Anthropic: ✅ Configurado / ⚠️ Não configurado
-   - MiniMax: ✅ Configurado / ⚠️ Não configurado
-   - Claude Subscription: ✅ Disponível / ⚠️ Indisponível
-3. Para cada provider, pode inserir API key (mascarada no frontend).
-4. Pode selecionar provider padrão e provider de fallback.
-5. Pode testar conexão.
-6. Salvar.
-
-**Nota**: API keys são enviadas ao backend e nunca armazenadas no frontend.
+**Input**: Generated artifacts  
+**Output**: .md or .json file  
 
 ---
 
-## Estados da interface
+## Side flow — Provider configuration
 
-| Estado | Comportamento |
+Accessible at any time via the gear icon in the header.
+
+1. User opens side panel/modal for configuration.
+2. Views list of providers with status:
+   - OpenRouter: ✅ Configured / ⚠️ Not configured
+   - Anthropic: ✅ Configured / ⚠️ Not configured
+   - MiniMax: ✅ Configured / ⚠️ Not configured
+   - Claude Subscription: ✅ Available / ⚠️ Unavailable
+3. For each provider, can enter API key (masked on frontend).
+4. Can select default provider and fallback provider.
+5. Can test connection.
+6. Save.
+
+**Note**: API keys are sent to the backend and never stored on the frontend.
+
+---
+
+## Interface states
+
+| State | Behavior |
 |---|---|
-| Vazio | Mensagem orientadora com CTA |
-| Loading | Skeleton com pulse animation |
-| Sucesso | Conteúdo exibido com transição suave |
-| Erro | Mensagem vermelha com ação sugerida |
-| Sem provider | Banner amarelo com link para configuração |
-| Fallback ativo | Badge indicando "Usando [provider] (fallback)" |
+| Empty | Guidance message with CTA |
+| Loading | Skeleton with pulse animation |
+| Success | Content displayed with smooth transition |
+| Error | Red message with suggested action |
+| No provider | Yellow banner with link to configuration |
+| Active fallback | Badge indicating "Using [provider] (fallback)" |
 
 ---
 
-## Momentos wow
+## Wow moments
 
-| # | Momento | Descrição |
+| # | Moment | Description |
 |---|---|---|
-| 1 | Spec aparece | Conhecimento vira especificação estruturada em segundos |
-| 2 | Persona ganha forma | Sliders, tags e exemplos dão vida ao agente |
-| 3 | Prompt final surge | Tudo se conecta em um prompt profissional pronto |
-| 4 | Validação confirma | Checklist verde mostra que está tudo coerente |
-| 5 | Export instantâneo | Artefatos prontos para usar no mundo real |
+| 1 | Spec appears | Knowledge becomes a structured specification in seconds |
+| 2 | Persona takes shape | Sliders, tags, and examples bring the agent to life |
+| 3 | Final prompt emerges | Everything connects into a professional ready-to-use prompt |
+| 4 | Validation confirms | Green checklist shows everything is coherent |
+| 5 | Instant export | Artifacts ready to use in the real world |

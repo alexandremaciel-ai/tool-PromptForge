@@ -1,228 +1,228 @@
 # 05 — Prompt Spec
 
-## Filosofia
-Todo prompt importante neste sistema nasce de especificação. Um prompt sem spec é texto improvisado. Um prompt com spec é artefato de engenharia.
+## Philosophy
+Every important prompt in this system originates from specification. A prompt without a spec is improvised text. A prompt with a spec is an engineering artifact.
 
 ---
 
-## Como prompts nascem da spec
+## How prompts originate from the spec
 
 ```
-Conhecimento extraído
+Extracted knowledge
        ↓
-  Objetivo do usuário
+  User objective
        ↓
-  Spec de prompt (estruturada)
+  Prompt spec (structured)
        ↓
-  Persona do agente
+  Agent persona
        ↓
-  Prompt final (spec + persona + conhecimento)
+  Final prompt (spec + persona + knowledge)
        ↓
-  Validação
+  Validation
        ↓
   Export
 ```
 
-O prompt final é a materialização de três artefatos:
-1. A spec define **o que** o prompt deve fazer.
-2. A persona define **como** o prompt deve se comportar.
-3. O conhecimento define **com base em que** o prompt opera.
+The final prompt is the materialization of three artifacts:
+1. The spec defines **what** the prompt should do.
+2. The persona defines **how** the prompt should behave.
+3. The knowledge defines **based on what** the prompt operates.
 
 ---
 
-## Prompts do sistema
+## System prompts
 
-O PromptForge usa quatro prompts internos (meta-prompts) para operar:
+PromptForge uses four internal prompts (meta-prompts) to operate:
 
-### Prompt 1 — Gerador de Spec
+### Prompt 1 — Spec Generator
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| **Nome** | `spec-generator` |
-| **Objetivo** | Gerar especificação de prompt a partir de conhecimento extraído e objetivo do usuário |
-| **Papel** | Engenheiro de prompt sênior |
+| **Name** | `spec-generator` |
+| **Objective** | Generate a prompt specification from extracted knowledge and user objective |
+| **Role** | Senior prompt engineer |
 | **Inputs** | `knowledge_chunks[]`, `user_objective` |
-| **Contexto obrigatório** | Trechos extraídos do documento enviado |
-| **Relação com persona** | Nenhuma (este prompt opera antes da persona) |
-| **Regras** | Ser específico, evitar generalidades, declarar restrições |
-| **Guardrails** | Não inventar informação além do conhecimento fornecido |
-| **Formato de saída** | JSON estruturado com campos: `objective`, `inputs`, `required_context`, `constraints`, `guardrails`, `output_format` |
+| **Required context** | Excerpts extracted from the submitted document |
+| **Relation to persona** | None (this prompt operates before the persona) |
+| **Rules** | Be specific, avoid generalities, declare constraints |
+| **Guardrails** | Do not fabricate information beyond the provided knowledge |
+| **Output format** | Structured JSON with fields: `objective`, `inputs`, `required_context`, `constraints`, `guardrails`, `output_format` |
 
-**Exemplo de entrada**:
+**Input example**:
 ```json
 {
-  "knowledge_chunks": ["...trechos de FAQ..."],
-  "user_objective": "Criar agente de suporte para dúvidas frequentes"
+  "knowledge_chunks": ["...FAQ excerpts..."],
+  "user_objective": "Create a support agent for frequently asked questions"
 }
 ```
 
-**Exemplo de saída**:
+**Output example**:
 ```json
 {
-  "objective": "Responder dúvidas frequentes de clientes sobre configuração do produto",
-  "inputs": ["pergunta do usuário"],
-  "required_context": "Base de conhecimento da FAQ do produto",
-  "constraints": ["Responder apenas sobre temas cobertos pela FAQ", "Não inventar funcionalidades"],
-  "guardrails": ["Admitir quando não souber", "Sugerir contato humano quando necessário"],
-  "output_format": "Resposta em texto natural, máximo 200 palavras"
+  "objective": "Answer customer frequent questions about product configuration",
+  "inputs": ["user question"],
+  "required_context": "Product FAQ knowledge base",
+  "constraints": ["Answer only topics covered by the FAQ", "Do not fabricate features"],
+  "guardrails": ["Admit when unsure", "Suggest human contact when necessary"],
+  "output_format": "Natural text response, maximum 200 words"
 }
 ```
 
-**Critérios de sucesso**:
-- Spec é específica ao domínio fornecido.
-- Spec não contém informação inventada.
-- Spec é acionável (pode gerar prompt funcional).
+**Success criteria**:
+- Spec is specific to the provided domain.
+- Spec contains no fabricated information.
+- Spec is actionable (can generate a functional prompt).
 
 ---
 
-### Prompt 2 — Gerador de Persona
+### Prompt 2 — Persona Generator
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| **Nome** | `persona-generator` |
-| **Objetivo** | Sugerir persona de agente coerente com o conhecimento e a spec |
-| **Papel** | Designer conversacional sênior |
+| **Name** | `persona-generator` |
+| **Objective** | Suggest an agent persona coherent with the knowledge and spec |
+| **Role** | Senior conversational designer |
 | **Inputs** | `spec`, `knowledge_chunks[]`, `user_objective` |
-| **Contexto obrigatório** | Spec gerada + conhecimento-fonte |
-| **Relação com persona** | Este prompt GERA a persona, não a usa |
-| **Regras** | Persona deve ser concreta, não genérica. Incluir exemplos e anti-exemplos. |
-| **Guardrails** | Não gerar persona que contradiga a spec. Não usar adjetivos vazios. |
-| **Formato de saída** | JSON estruturado com todos os campos da persona (ver 04-agent-persona-spec.md) |
+| **Required context** | Generated spec + source knowledge |
+| **Relation to persona** | This prompt GENERATES the persona, it does not use it |
+| **Rules** | Persona must be concrete, not generic. Include examples and anti-examples. |
+| **Guardrails** | Do not generate a persona that contradicts the spec. Do not use empty adjectives. |
+| **Output format** | Structured JSON with all persona fields (see 04-agent-persona-spec.md) |
 
-**Critérios de sucesso**:
-- Persona é coerente com o domínio.
-- Tom sugerido é justificável.
-- Exemplos são realistas.
-- Anti-exemplos são úteis.
+**Success criteria**:
+- Persona is coherent with the domain.
+- Suggested tone is justifiable.
+- Examples are realistic.
+- Anti-examples are useful.
 
 ---
 
-### Prompt 3 — Construtor de Prompt Final
+### Prompt 3 — Final Prompt Builder
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| **Nome** | `prompt-builder` |
-| **Objetivo** | Gerar prompt final operacional combinando spec + persona + conhecimento |
-| **Papel** | Arquiteto de prompts |
+| **Name** | `prompt-builder` |
+| **Objective** | Generate an operational final prompt combining spec + persona + knowledge |
+| **Role** | Prompt architect |
 | **Inputs** | `spec`, `persona`, `knowledge_chunks[]` |
-| **Contexto obrigatório** | Spec completa + persona completa + conhecimento relevante |
-| **Relação com persona** | O prompt final INCORPORA a persona como system instructions |
-| **Regras** | O prompt deve ser autocontido. Deve funcionar sem conhecimento prévio do operador. |
-| **Guardrails** | Incluir limites da persona. Incluir formato de saída. Incluir regras de fallback. |
-| **Formato de saída** | Markdown estruturado: System Prompt → Regras → Context → Guardrails → Output Format → Few-shot Examples |
+| **Required context** | Full spec + full persona + relevant knowledge |
+| **Relation to persona** | The final prompt INCORPORATES the persona as system instructions |
+| **Rules** | The prompt must be self-contained. Must work without prior knowledge from the operator. |
+| **Guardrails** | Include persona limits. Include output format. Include fallback rules. |
+| **Output format** | Structured Markdown: System Prompt → Rules → Context → Guardrails → Output Format → Few-shot Examples |
 
-**Estrutura da saída**:
+**Output structure**:
 ```markdown
 ## System Prompt
-[Instrução principal com identidade, papel e tom]
+[Main instruction with identity, role, and tone]
 
-## Regras
-[Lista de regras derivadas da spec e persona]
+## Rules
+[List of rules derived from spec and persona]
 
-## Contexto
-[Conhecimento relevante embedado]
+## Context
+[Embedded relevant knowledge]
 
 ## Guardrails
-[Limites de comportamento]
+[Behavioral limits]
 
-## Formato de saída
-[Como o agente deve formatar respostas]
+## Output Format
+[How the agent should format responses]
 
-## Exemplos
-[2-3 exemplos few-shot coerentes com a persona]
+## Examples
+[2–3 few-shot examples coherent with the persona]
 ```
 
-**Critérios de sucesso**:
-- Prompt reflete spec integralmente.
-- Prompt reflete persona (tom, vocabulário, limites).
-- Guardrails estão presentes.
-- Exemplos são coerentes com tom definido.
+**Success criteria**:
+- Prompt fully reflects spec.
+- Prompt reflects persona (tone, vocabulary, limits).
+- Guardrails are present.
+- Examples are coherent with the defined tone.
 
 ---
 
-### Prompt 4 — Validador de Consistência
+### Prompt 4 — Consistency Validator
 
-| Atributo | Valor |
+| Attribute | Value |
 |---|---|
-| **Nome** | `consistency-validator` |
-| **Objetivo** | Validar que o prompt final é consistente com spec e persona |
-| **Papel** | Auditor de qualidade de prompts |
+| **Name** | `consistency-validator` |
+| **Objective** | Validate that the final prompt is consistent with spec and persona |
+| **Role** | Prompt quality auditor |
 | **Inputs** | `spec`, `persona`, `final_prompt` |
-| **Contexto obrigatório** | Spec, persona e prompt final gerados |
-| **Relação com persona** | Verifica se a persona está corretamente representada |
-| **Regras** | Avaliar cada critério individualmente. Ser específico nas falhas. |
-| **Guardrails** | Não aprovar automaticamente. Sempre apontar pelo menos um ponto de melhoria. |
-| **Formato de saída** | JSON com checklist de critérios, score e sugestões |
+| **Required context** | Generated spec, persona, and final prompt |
+| **Relation to persona** | Verifies whether the persona is correctly represented |
+| **Rules** | Evaluate each criterion individually. Be specific about failures. |
+| **Guardrails** | Do not automatically approve. Always point out at least one improvement area. |
+| **Output format** | JSON with criteria checklist, score, and suggestions |
 
-**Exemplo de saída**:
+**Output example**:
 ```json
 {
   "checks": [
-    {"criterion": "Tom refletido", "pass": true, "note": ""},
-    {"criterion": "Vocabulário proibido ausente", "pass": true, "note": ""},
-    {"criterion": "Guardrails presentes", "pass": true, "note": ""},
-    {"criterion": "Formato de saída definido", "pass": true, "note": ""},
-    {"criterion": "Exemplos coerentes", "pass": false, "note": "Exemplo 2 usa tom informal inconsistente com formalidade 4/5"}
+    {"criterion": "Tone reflected", "pass": true, "note": ""},
+    {"criterion": "Prohibited vocabulary absent", "pass": true, "note": ""},
+    {"criterion": "Guardrails present", "pass": true, "note": ""},
+    {"criterion": "Output format defined", "pass": true, "note": ""},
+    {"criterion": "Coherent examples", "pass": false, "note": "Example 2 uses informal tone inconsistent with formality 4/5"}
   ],
   "score": 80,
-  "suggestions": ["Ajustar Exemplo 2 para manter formalidade consistente"]
+  "suggestions": ["Adjust Example 2 to maintain consistent formality"]
 }
 ```
 
-**Critérios de sucesso**:
-- Nenhum critério passa sem justificativa.
-- Falhas apontam trechos específicos.
-- Sugestões são acionáveis.
+**Success criteria**:
+- No criterion passes without justification.
+- Failures point to specific excerpts.
+- Suggestions are actionable.
 
 ---
 
-## Estratégia de versionamento
+## Versioning strategy
 
-Cada prompt do sistema é armazenado com:
-- Identificador: `{nome}-v{versão}` (ex: `spec-generator-v1`)
-- Conteúdo: template completo
-- Changelog: o que mudou na versão
+Each system prompt is stored with:
+- Identifier: `{name}-v{version}` (e.g., `spec-generator-v1`)
+- Content: full template
+- Changelog: what changed in the version
 
-No MVP, o versionamento é manual via arquivos no diretório `src/lib/prompts/`. Versionamento automatizado está fora de escopo.
+In the MVP, versioning is manual via files in the `src/lib/prompts/` directory. Automated versioning is out of scope.
 
 ---
 
-## Relação entre prompts
+## Relationship between prompts
 
 ```
 spec-generator (P1)
-      ↓ gera spec
+      ↓ generates spec
 persona-generator (P2)
-      ↓ gera persona
+      ↓ generates persona
 prompt-builder (P3)
-      ↓ gera prompt final
+      ↓ generates final prompt
 consistency-validator (P4)
-      ↓ valida tudo
+      ↓ validates everything
 ```
 
-Cada prompt alimenta o próximo. A cadeia é linear e cada etapa produz artefato visualizável.
+Each prompt feeds the next. The chain is linear and each step produces a viewable artifact.
 
 ---
 
-## Rubrica de qualidade de prompts
+## Prompt quality rubric
 
-| Critério | Peso | Descrição |
+| Criterion | Weight | Description |
 |---|---|---|
-| Especificidade | 25% | O prompt é específico ao domínio? |
-| Completude | 20% | Todas as seções obrigatórias estão presentes? |
-| Coerência com persona | 20% | Tom, vocabulário e limites são respeitados? |
-| Guardrails | 15% | Limites estão explícitos? |
-| Exemplos | 10% | Exemplos são realistas e coerentes? |
-| Formato | 10% | O formato de saída está definido? |
+| Specificity | 25% | Is the prompt specific to the domain? |
+| Completeness | 20% | Are all required sections present? |
+| Persona coherence | 20% | Are tone, vocabulary, and limits respected? |
+| Guardrails | 15% | Are limits explicit? |
+| Examples | 10% | Are examples realistic and coherent? |
+| Format | 10% | Is the output format defined? |
 
 ---
 
-## Casos limite
+## Edge cases
 
-| Caso | Tratamento |
+| Case | Treatment |
 |---|---|
-| Conhecimento vazio | Gerar spec genérica com aviso de que falta contexto |
-| Objetivo vago | Pedir refinamento com sugestões concretas |
-| Persona contraditória | Alertar na validação (ex: "Formalidade 5 com saudação 'E aí!'") |
-| Prompt muito longo | Sugerir compactação, respeitando limites do modelo |
-| Provider indisponível | Fallback automático, log do evento |
+| Empty knowledge | Generate generic spec with warning that context is missing |
+| Vague objective | Request refinement with concrete suggestions |
+| Contradictory persona | Alert in validation (e.g., "Formality 5 with greeting 'Hey!'") |
+| Prompt too long | Suggest compaction, respecting model limits |
+| Provider unavailable | Automatic fallback, event log |

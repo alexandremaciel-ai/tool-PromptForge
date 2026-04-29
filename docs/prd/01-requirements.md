@@ -1,160 +1,160 @@
-# 01 — Requisitos
+# 01 — Requirements
 
-## Objetivo do sistema
-Permitir que um usuário transforme conhecimento bruto em artefatos operacionais de engenharia de prompt, incluindo especificações, personas de agente, prompts finais com guardrails, validações e exportações — usando providers de modelo configuráveis com fallback.
-
----
-
-## Requisitos funcionais
-
-### RF01 — Ingestão de conhecimento
-- O sistema deve aceitar upload de arquivos PDF, TXT e Markdown.
-- O sistema deve extrair texto dos arquivos enviados.
-- O sistema deve segmentar o texto em chunks previsíveis.
-- O sistema deve exibir feedback imediato sobre o upload (nome do arquivo, tamanho, status).
-- O sistema deve exibir os trechos extraídos para transparência.
-
-### RF02 — Geração de spec de prompt
-- O sistema deve gerar uma especificação de prompt a partir do conhecimento extraído.
-- A spec deve conter: objetivo, inputs, contexto obrigatório, restrições, guardrails e formato de saída.
-- O usuário deve poder editar a spec gerada antes de prosseguir.
-
-### RF03 — Criação de persona do agente
-- O sistema deve permitir criação e edição de persona com os seguintes campos mínimos:
-  - Nome interno
-  - Papel do agente
-  - Objetivo conversacional
-  - Público-alvo
-  - Tom principal e tons secundários
-  - Personalidade
-  - Nível de formalidade (escala 1-5)
-  - Nível de empatia (escala 1-5)
-  - Nível de objetividade (escala 1-5)
-  - Vocabulário preferido
-  - Vocabulário proibido
-  - Postura diante de incerteza
-  - Limites comportamentais
-  - Exemplos de resposta (bons e ruins)
-- O sistema deve poder sugerir persona automaticamente com base no conhecimento extraído.
-- O usuário deve poder ajustar a persona sugerida.
-
-### RF04 — Geração de prompt final
-- O sistema deve gerar prompt final vinculado à spec e à persona.
-- O prompt gerado deve conter: papel, objetivo, regras, contexto, guardrails, formato de saída e exemplos few-shot.
-- O sistema deve indicar quais trechos do conhecimento sustentam o prompt.
-
-### RF05 — Validação e score
-- O sistema deve exibir pelo menos uma validação do prompt gerado.
-- Opções aceitas: checklist de consistência, score de qualidade, ou lista de guardrails atendidos.
-- A validação deve verificar coerência entre persona e prompt.
-
-### RF06 — Configuração de provider
-- O sistema deve permitir configuração de providers: OpenRouter, Anthropic, MiniMax.
-- O sistema deve suportar modo opcional `claude-subscription`.
-- O sistema deve permitir seleção de provider por etapa ou global.
-- O sistema deve exibir provider ativo.
-- O sistema deve executar fallback quando o provider primário falhar.
-- O sistema deve exibir mensagem clara quando nenhum provider estiver configurado.
-
-### RF07 — Export
-- O sistema deve exportar artefatos em Markdown.
-- O sistema deve exportar artefatos em JSON.
-- A exportação deve incluir: spec, persona, prompt final e validação.
-
-### RF08 — Indicação de runtime
-- A interface deve mostrar qual provider/runtime está ativo em cada momento.
-- A interface deve indicar fallback quando ocorrer.
+## System objective
+Allow a user to transform raw knowledge into operational prompt engineering artifacts, including specifications, agent personas, final prompts with guardrails, validations, and exports — using configurable model providers with fallback.
 
 ---
 
-## Requisitos não funcionais
+## Functional requirements
 
-### RNF01 — Performance
-- A geração de spec deve iniciar em menos de 3 segundos após submissão.
-- O upload de arquivos deve aceitar até 10 MB por arquivo.
-- A interface deve fornecer feedback de loading durante gerações.
+### FR01 — Knowledge ingestion
+- The system must accept file uploads in PDF, TXT, and Markdown formats.
+- The system must extract text from uploaded files.
+- The system must segment text into predictable chunks.
+- The system must display immediate feedback on the upload (file name, size, status).
+- The system must display extracted excerpts for transparency.
 
-### RNF02 — Segurança
-- Secrets nunca devem ser expostos no frontend.
-- Chamadas autenticadas a providers devem passar pelo backend.
-- O projeto deve incluir `.env.example` sem chaves reais.
-- O sistema deve funcionar com pelo menos um provider configurado.
+### FR02 — Prompt spec generation
+- The system must generate a prompt specification from the extracted knowledge.
+- The spec must contain: objective, inputs, required context, constraints, guardrails, and output format.
+- The user must be able to edit the generated spec before proceeding.
 
-### RNF03 — Usabilidade
-- A interface deve ser usável sem manual.
-- O fluxo principal deve ser completável em menos de 5 cliques após o upload.
-- Estados de loading, erro e vazio devem ter tratamento visual explícito.
+### FR03 — Agent persona creation
+- The system must allow persona creation and editing with the following minimum fields:
+  - Internal name
+  - Agent role
+  - Conversational objective
+  - Target audience
+  - Main tone and secondary tones
+  - Personality
+  - Formality level (scale 1–5)
+  - Empathy level (scale 1–5)
+  - Objectivity level (scale 1–5)
+  - Preferred vocabulary
+  - Prohibited vocabulary
+  - Stance on uncertainty
+  - Behavioral limits
+  - Response examples (good and bad)
+- The system must be able to suggest a persona automatically based on extracted knowledge.
+- The user must be able to adjust the suggested persona.
 
-### RNF04 — Portabilidade
-- A aplicação deve rodar com Docker e docker-compose.
-- O bootstrap local deve requerer apenas `docker-compose up`.
-- A aplicação deve funcionar em macOS e Linux.
+### FR04 — Final prompt generation
+- The system must generate a final prompt linked to the spec and persona.
+- The generated prompt must contain: role, objective, rules, context, guardrails, output format, and few-shot examples.
+- The system must indicate which knowledge excerpts support the prompt.
 
-### RNF05 — Manutenibilidade
-- Código modular com separação clara entre frontend, backend e camada de provider.
-- Nomes de arquivo e função descritivos.
-- Sem abstrações desnecessárias.
+### FR05 — Validation and score
+- The system must display at least one validation of the generated prompt.
+- Accepted options: consistency checklist, quality score, or list of satisfied guardrails.
+- The validation must verify coherence between persona and prompt.
+
+### FR06 — Provider configuration
+- The system must allow provider configuration: OpenRouter, Anthropic, MiniMax.
+- The system must support the optional `claude-subscription` mode.
+- The system must allow provider selection per stage or globally.
+- The system must display the active provider.
+- The system must execute fallback when the primary provider fails.
+- The system must display a clear message when no provider is configured.
+
+### FR07 — Export
+- The system must export artifacts in Markdown.
+- The system must export artifacts in JSON.
+- The export must include: spec, persona, final prompt, and validation.
+
+### FR08 — Runtime indication
+- The interface must show which provider/runtime is active at each moment.
+- The interface must indicate fallback when it occurs.
 
 ---
 
-## Restrições
-- Não há autenticação de usuários no MVP.
-- Não há persistência de longo prazo — dados existem durante a sessão.
-- Não há deploy em cloud — apenas execução local.
-- Máximo de 3 arquivos por sessão de upload.
-- O modo `claude-subscription` é opcional e não garantido.
+## Non-functional requirements
+
+### NFR01 — Performance
+- Spec generation must start in less than 3 seconds after submission.
+- File upload must accept up to 10 MB per file.
+- The interface must provide loading feedback during generation.
+
+### NFR02 — Security
+- Secrets must never be exposed on the frontend.
+- Authenticated calls to providers must go through the backend.
+- The project must include `.env.example` without real keys.
+- The system must function with at least one configured provider.
+
+### NFR03 — Usability
+- The interface must be usable without a manual.
+- The main flow must be completable in less than 5 clicks after upload.
+- Loading, error, and empty states must have explicit visual treatment.
+
+### NFR04 — Portability
+- The application must run with Docker and docker-compose.
+- The local bootstrap must require only `docker-compose up`.
+- The application must work on macOS and Linux.
+
+### NFR05 — Maintainability
+- Modular code with clear separation between frontend, backend, and provider layer.
+- Descriptive file and function names.
+- No unnecessary abstractions.
 
 ---
 
-## Critérios de aceite
+## Constraints
+- No user authentication in the MVP.
+- No long-term persistence — data exists during the session.
+- No cloud deployment — local execution only.
+- Maximum of 3 files per upload session.
+- The `claude-subscription` mode is optional and not guaranteed.
 
-| Critério | Condição |
+---
+
+## Acceptance criteria
+
+| Criterion | Condition |
 |---|---|
-| Upload funciona | PDF, TXT e MD são aceitos e texto é extraído |
-| Spec é gerada | Spec contém objetivo, inputs, restrições e formato |
-| Persona é criável | Todos os campos mínimos são editáveis |
-| Prompt final é gerado | Prompt reflete spec + persona |
-| Validação existe | Pelo menos um mecanismo de validação funciona |
-| Provider é configurável | Pelo menos um provider funciona via API key |
-| Fallback funciona | Sistema tenta provider alternativo em caso de falha |
-| Export funciona | Markdown e JSON são gerados corretamente |
-| Docker roda | `docker-compose up` inicia a aplicação |
+| Upload works | PDF, TXT, and MD are accepted and text is extracted |
+| Spec is generated | Spec contains objective, inputs, constraints, and format |
+| Persona is creatable | All minimum fields are editable |
+| Final prompt is generated | Prompt reflects spec + persona |
+| Validation exists | At least one validation mechanism works |
+| Provider is configurable | At least one provider works via API key |
+| Fallback works | System tries alternative provider on failure |
+| Export works | Markdown and JSON are generated correctly |
+| Docker runs | `docker-compose up` starts the application |
 
 ---
 
-## Casos de uso principais
+## Main use cases
 
-### CU01 — Gerar prompt a partir de documento
-**Ator**: Prompt engineer  
-**Pré-condição**: Pelo menos um provider configurado  
-**Fluxo**: Upload → Extração → Spec → Persona → Prompt → Validação → Export  
-**Pós-condição**: Artefatos exportáveis gerados  
+### UC01 — Generate prompt from document
+**Actor**: Prompt engineer  
+**Pre-condition**: At least one provider configured  
+**Flow**: Upload → Extraction → Spec → Persona → Prompt → Validation → Export  
+**Post-condition**: Exportable artifacts generated  
 
-### CU02 — Criar persona de agente
-**Ator**: Designer conversacional  
-**Pré-condição**: Conhecimento extraído ou inserido manualmente  
-**Fluxo**: Definir campos de persona → Gerar persona-spec → Gerar system prompt → Validar consistência  
-**Pós-condição**: Persona especificada com exemplos e anti-exemplos  
+### UC02 — Create agent persona
+**Actor**: Conversational designer  
+**Pre-condition**: Knowledge extracted or manually entered  
+**Flow**: Define persona fields → Generate persona-spec → Generate system prompt → Validate consistency  
+**Post-condition**: Persona specified with examples and anti-examples  
 
-### CU03 — Configurar provider
-**Ator**: Usuário técnico  
-**Pré-condição**: Pelo menos uma API key disponível  
-**Fluxo**: Acessar configuração → Inserir API key → Selecionar provider → Testar conexão → Salvar  
-**Pós-condição**: Provider ativo exibido na interface  
+### UC03 — Configure provider
+**Actor**: Technical user  
+**Pre-condition**: At least one API key available  
+**Flow**: Access configuration → Enter API key → Select provider → Test connection → Save  
+**Post-condition**: Active provider displayed in the interface  
 
-### CU04 — Exportar artefatos
-**Ator**: Qualquer usuário  
-**Pré-condição**: Prompt final gerado  
-**Fluxo**: Selecionar formato → Exportar  
-**Pós-condição**: Arquivo MD ou JSON baixado  
+### UC04 — Export artifacts
+**Actor**: Any user  
+**Pre-condition**: Final prompt generated  
+**Flow**: Select format → Export  
+**Post-condition**: MD or JSON file downloaded  
 
 ---
 
-## Suposições explícitas
-1. O usuário possui pelo menos uma API key de um dos providers suportados.
-2. Os documentos enviados estão em português ou inglês.
-3. O ambiente local tem Docker instalado.
-4. O usuário tem familiaridade básica com conceitos de IA generativa.
-5. A conexão com internet está disponível para chamadas a providers via API.
-6. Os modelos dos providers suportam geração em português do Brasil.
-7. A qualidade da saída depende diretamente da qualidade do conhecimento enviado.
+## Explicit assumptions
+1. The user has at least one API key from one of the supported providers.
+2. Submitted documents are in Portuguese or English.
+3. The local environment has Docker installed.
+4. The user has basic familiarity with generative AI concepts.
+5. An internet connection is available for API calls to providers.
+6. The providers' models support generation in Brazilian Portuguese.
+7. Output quality depends directly on the quality of the submitted knowledge.

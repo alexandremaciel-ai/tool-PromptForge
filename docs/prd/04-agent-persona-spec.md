@@ -1,180 +1,180 @@
 # 04 — Agent Persona Spec
 
-## Objetivo da feature
-Permitir que o usuário crie, edite e exporte a identidade conversacional de um agente de IA — incluindo tom, voz, personalidade, regras de comportamento e critérios de consistência — como um artefato de engenharia testável e versionável.
+## Feature objective
+Allow the user to create, edit, and export the conversational identity of an AI agent — including tone, voice, personality, behavioral rules, and consistency criteria — as a testable and versionable engineering artifact.
 
 ---
 
-## Problema que resolve
-- Agentes de IA com tom inconsistente entre interações.
-- Personas definidas em texto livre sem estrutura, sem testes e sem critérios.
-- Falta de especificação formal sobre o que o agente deve e não deve fazer.
-- Dificuldade de alinhar expectativas entre quem projeta o agente e quem valida a saída.
+## Problem it solves
+- AI agents with inconsistent tone across interactions.
+- Personas defined in loose text without structure, tests, or criteria.
+- Lack of formal specification about what the agent should and should not do.
+- Difficulty aligning expectations between those who design the agent and those who validate the output.
 
 ---
 
-## Casos de uso
+## Use cases
 
-| Caso | Descrição |
+| Case | Description |
 |---|---|
-| Chatbot de suporte | Persona empática, formal, objetiva, que nunca inventa informação |
-| Agente de vendas | Persona persuasiva, proativa, com limites éticos claros |
-| Assistente interno | Persona técnica, direta, com vocabulário específico do negócio |
-| Bot de onboarding | Persona acolhedora, paciente, com guias passo a passo |
-| Agente especializado | Persona autoritativa em um domínio, com tom consultivo |
+| Support chatbot | Empathetic, formal, objective persona that never fabricates information |
+| Sales agent | Persuasive, proactive persona with clear ethical limits |
+| Internal assistant | Technical, direct persona with business-specific vocabulary |
+| Onboarding bot | Welcoming, patient persona with step-by-step guides |
+| Specialized agent | Authoritative persona in a domain, with consultative tone |
 
 ---
 
-## Campos editáveis da persona
+## Editable persona fields
 
-### Identidade
-| Campo | Tipo | Exemplo |
+### Identity
+| Field | Type | Example |
 |---|---|---|
-| Nome interno | Text | "Aria" |
-| Papel do agente | Text | "Assistente de suporte técnico" |
-| Objetivo conversacional | Text | "Resolver dúvidas de clientes sobre configuração de produto" |
-| Público-alvo | Text | "Usuários não técnicos do produto SaaS" |
+| Internal name | Text | "Aria" |
+| Agent role | Text | "Technical support assistant" |
+| Conversational objective | Text | "Resolve customer questions about product configuration" |
+| Target audience | Text | "Non-technical users of the SaaS product" |
 
-### Tom e personalidade
-| Campo | Tipo | Opções/Range |
+### Tone and personality
+| Field | Type | Options/Range |
 |---|---|---|
-| Tom principal | Select | Profissional, Amigável, Técnico, Consultivo, Empático |
-| Tons secundários | Multi-select | Paciente, Encorajador, Direto, Didático, Neutro |
-| Personalidade | Tags | Atencioso, Preciso, Proativo, Cauteloso, Acolhedor |
-| Formalidade | Slider 1-5 | 1=Muito informal, 5=Muito formal |
-| Empatia | Slider 1-5 | 1=Factual puro, 5=Altamente empático |
-| Objetividade | Slider 1-5 | 1=Exploratório, 5=Direto ao ponto |
-| Proatividade | Slider 1-5 | 1=Apenas responde, 5=Antecipa necessidades |
+| Main tone | Select | Professional, Friendly, Technical, Consultative, Empathetic |
+| Secondary tones | Multi-select | Patient, Encouraging, Direct, Didactic, Neutral |
+| Personality | Tags | Attentive, Precise, Proactive, Cautious, Welcoming |
+| Formality | Slider 1–5 | 1=Very informal, 5=Very formal |
+| Empathy | Slider 1–5 | 1=Pure factual, 5=Highly empathetic |
+| Objectivity | Slider 1–5 | 1=Exploratory, 5=Straight to the point |
+| Proactivity | Slider 1–5 | 1=Only responds, 5=Anticipates needs |
 
-### Linguagem
-| Campo | Tipo | Exemplo |
+### Language
+| Field | Type | Example |
 |---|---|---|
-| Vocabulário preferido | Chips | "configuração", "passo a passo", "vamos resolver" |
-| Vocabulário proibido | Chips | "óbvio", "simplesmente", "você deveria saber" |
-| Estilo de saudação | Text | "Olá! Como posso ajudar hoje?" |
-| Estilo de fechamento | Text | "Se precisar de mais alguma coisa, estou aqui." |
-| Idioma principal | Select | Português BR, English, Español |
+| Preferred vocabulary | Chips | "configuration", "step by step", "let's fix this" |
+| Prohibited vocabulary | Chips | "obvious", "simply", "you should know" |
+| Greeting style | Text | "Hello! How can I help you today?" |
+| Closing style | Text | "If you need anything else, I'm here." |
+| Primary language | Select | English, Português BR, Español |
 
-### Comportamento
-| Campo | Tipo | Exemplo |
+### Behavior
+| Field | Type | Example |
 |---|---|---|
-| Postura diante de incerteza | Select | Admitir limites / Oferecer alternativas / Escalar para humano |
-| Comportamento sem contexto | Select | Pedir mais informação / Responder com ressalva / Recusar |
-| Limites comportamentais | Lista editável | "Nunca inventar dados", "Nunca prometer prazos" |
-| Regras de empatia | Text | "Reconhecer frustração antes de oferecer solução" |
-| Regras de persuasão | Text (opcional) | "Sugerir upgrade apenas quando resolver problema real" |
-| Regras de neutralidade | Text (opcional) | "Não comparar com concorrentes" |
+| Stance on uncertainty | Select | Admit limits / Offer alternatives / Escalate to human |
+| Behavior without context | Select | Ask for more information / Answer with caveat / Decline |
+| Behavioral limits | Editable list | "Never fabricate data", "Never promise deadlines" |
+| Empathy rules | Text | "Acknowledge frustration before offering a solution" |
+| Persuasion rules | Text (optional) | "Suggest upgrade only when it solves a real problem" |
+| Neutrality rules | Text (optional) | "Do not compare with competitors" |
 
 ---
 
-## Modelo mental da persona
+## Persona mental model
 
-A persona é composta por três camadas:
+The persona is composed of three layers:
 
 ```
 ┌──────────────────────────────┐
-│        IDENTIDADE            │  Quem é o agente, para quem fala
+│          IDENTITY            │  Who the agent is, who it speaks to
 ├──────────────────────────────┤
-│     TOM & PERSONALIDADE      │  Como fala, com que intensidade
+│     TONE & PERSONALITY       │  How it speaks, with what intensity
 ├──────────────────────────────┤
-│     REGRAS & LIMITES         │  O que deve/não deve fazer
+│      RULES & LIMITS          │  What it should/should not do
 └──────────────────────────────┘
 ```
 
-Cada camada influencia a próxima. Identidade define o contexto, tom define a forma, regras definem os limites.
+Each layer influences the next. Identity defines the context, tone defines the form, rules define the limits.
 
 ---
 
-## Eixos de tom
+## Tone axes
 
 ```
 Formal ━━━━━━━━━━●━━━━━━━━━━ Casual
-Técnico ━━━━━━━━●━━━━━━━━━━━ Leigo
-Empático ━━━●━━━━━━━━━━━━━━━ Factual
-Proativo ━━━━━━━━━━━●━━━━━━━ Reativo
-Direto ━━━━━━━━━━━━━●━━━━━━━ Detalhado
+Technical ━━━━━━━━●━━━━━━━━━━━ Layman
+Empathetic ━━━●━━━━━━━━━━━━━━━ Factual
+Proactive ━━━━━━━━━━━●━━━━━━━ Reactive
+Direct ━━━━━━━━━━━━━●━━━━━━━ Detailed
 ```
 
-O usuário ajusta esses eixos via sliders. O sistema converte para instruções textuais.
+The user adjusts these axes via sliders. The system converts them to textual instructions.
 
 ---
 
-## Eixos de personalidade
+## Personality axes
 
-Personalidade é definida por tags selecionáveis. Tags são agrupadas por categoria:
+Personality is defined by selectable tags. Tags are grouped by category:
 
-- **Estilo**: Atencioso, Preciso, Criativo, Prático
-- **Postura**: Proativo, Cauteloso, Resiliente, Paciente
-- **Energia**: Entusiasmado, Calmo, Engajado, Reservado
+- **Style**: Attentive, Precise, Creative, Practical
+- **Posture**: Proactive, Cautious, Resilient, Patient
+- **Energy**: Enthusiastic, Calm, Engaged, Reserved
 
-O usuário seleciona 3-5 tags que definem a personalidade.
+The user selects 3–5 tags that define the personality.
 
 ---
 
-## Adaptação por canal
+## Channel adaptation
 
-A persona deve ser adaptável ao canal de uso:
+The persona must be adaptable to the channel of use:
 
-| Canal | Ajustes |
+| Channel | Adjustments |
 |---|---|
-| Chatbot web | Respostas curtas, uso de emojis opcional |
-| Suporte técnico | Respostas detalhadas, passos numerados |
-| Onboarding | Tom acolhedor, marcos de progresso |
-| Vendas | Tom consultivo, perguntas de descoberta |
-| Interno | Tom direto, jargão técnico aceito |
+| Web chatbot | Short responses, optional emoji use |
+| Technical support | Detailed responses, numbered steps |
+| Onboarding | Welcoming tone, progress milestones |
+| Sales | Consultative tone, discovery questions |
+| Internal | Direct tone, technical jargon accepted |
 
-O canal é selecionável e ajusta parâmetros de tom automaticamente.
-
----
-
-## Exemplos de respostas coerentes
-
-### Persona: Aria (Suporte Técnico)
-- Tom: Profissional, Paciente
-- Formalidade: 4/5
-- Empatia: 4/5
-
-**Exemplo correto**:
-> "Entendo sua frustração com esse erro. Vamos resolver juntos — pode me dizer qual versão do sistema você está usando? Assim consigo indicar os passos exatos."
-
-**Exemplo correto** (sem contexto):
-> "Não encontrei informações sobre esse tema na documentação disponível. Posso encaminhar sua dúvida para o time especializado. Enquanto isso, posso ajudar com outra questão?"
+The channel is selectable and automatically adjusts tone parameters.
 
 ---
 
-## Exemplos de respostas incoerentes (anti-exemplos)
+## Examples of coherent responses
 
-**Anti-exemplo** (tom quebrado):
-> "Ah, isso é fácil. Só faz X e pronto." → Quebraria o tom paciente e profissional.
+### Persona: Aria (Technical Support)
+- Tone: Professional, Patient
+- Formality: 4/5
+- Empathy: 4/5
 
-**Anti-exemplo** (limite violado):
-> "Garanto que isso será corrigido na próxima versão." → Viola regra de nunca prometer prazos.
+**Correct example**:
+> "I understand your frustration with this error. Let's solve it together — can you tell me which version of the system you're using? That way I can give you the exact steps."
 
-**Anti-exemplo** (vocabulário proibido):
-> "Você deveria saber que isso é óbvio." → Usa vocabulário proibido.
-
-**Anti-exemplo** (empatia ausente):
-> "O erro acontece por configuração incorreta do seu lado." → Ignora regra de reconhecer frustração primeiro.
+**Correct example** (without context):
+> "I couldn't find information about this topic in the available documentation. I can forward your question to the specialized team. In the meantime, can I help with anything else?"
 
 ---
 
-## Critérios de avaliação da consistência
+## Examples of incoherent responses (anti-examples)
 
-| Critério | Peso | Método |
+**Anti-example** (broken tone):
+> "Ah, that's easy. Just do X and you're done." → Would break the patient and professional tone.
+
+**Anti-example** (limit violated):
+> "I guarantee this will be fixed in the next version." → Violates the rule of never promising deadlines.
+
+**Anti-example** (prohibited vocabulary):
+> "You should know that this is obvious." → Uses prohibited vocabulary.
+
+**Anti-example** (absent empathy):
+> "The error occurs due to incorrect configuration on your end." → Ignores the rule of acknowledging frustration first.
+
+---
+
+## Consistency evaluation criteria
+
+| Criterion | Weight | Method |
 |---|---|---|
-| Tom refletido no prompt final | Alto | Análise textual automática |
-| Vocabulário proibido ausente | Alto | Verificação por keyword |
-| Exemplos coerentes com persona | Médio | Comparação com exemplos de referência |
-| Limites respeitados | Alto | Checklist automático |
-| Formalidade consistente | Médio | Análise de registro linguístico |
-| Empatia presente quando esperada | Médio | Detecção de padrões empáticos |
+| Tone reflected in final prompt | High | Automatic textual analysis |
+| Prohibited vocabulary absent | High | Keyword verification |
+| Examples coherent with persona | Medium | Comparison with reference examples |
+| Limits respected | High | Automatic checklist |
+| Consistent formality | Medium | Linguistic register analysis |
+| Empathy present when expected | Medium | Empathetic pattern detection |
 
 ---
 
-## Saídas geradas pela feature
+## Outputs generated by the feature
 
-1. **persona-spec.md**: Documento Markdown com toda a especificação da persona.
-2. **system-prompt.md**: Prompt de sistema baseado na persona.
-3. **few-shot-examples.md**: Exemplos coerentes com o tom.
-4. **persona-checklist.md**: Checklist de validação de personalidade.
-5. **persona.json**: Estrutura JSON exportável da persona.
+1. **persona-spec.md**: Markdown document with the full persona specification.
+2. **system-prompt.md**: System prompt based on the persona.
+3. **few-shot-examples.md**: Examples coherent with the tone.
+4. **persona-checklist.md**: Personality validation checklist.
+5. **persona.json**: Exportable JSON structure of the persona.

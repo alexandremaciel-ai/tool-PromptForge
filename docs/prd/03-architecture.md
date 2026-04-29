@@ -1,44 +1,44 @@
-# 03 — Arquitetura
+# 03 — Architecture
 
-## Stack escolhida
+## Chosen stack
 
-| Camada | Tecnologia | Justificativa |
+| Layer | Technology | Rationale |
 |---|---|---|
-| Frontend | Next.js 14 (App Router) + TypeScript | SSR/SPA híbrido, API routes integradas, DX madura |
-| Estilo | Tailwind CSS v3 | Produtividade, consistência visual, dark mode nativo |
-| Backend | Next.js API Routes + Node.js | Elimina necessidade de servidor separado para a demo |
-| Parsing de PDF | `pdf-parse` (Node.js) | Extração de texto de PDF sem dependências externas pesadas |
-| Parsing de MD/TXT | Nativo (fs + string processing) | Leitura direta sem bibliotecas |
-| Persistência | Em memória (sessão) + filesystem local | Suficiente para demo, sem banco de dados |
-| Containerização | Docker + docker-compose | Execução reproduzível e portável |
-| Provider SDK | Adapters customizados (fetch-based) | Controle total, sem dependência de SDKs de vendor |
+| Frontend | Next.js 14 (App Router) + TypeScript | Hybrid SSR/SPA, integrated API routes, mature DX |
+| Styling | Tailwind CSS v3 | Productivity, visual consistency, native dark mode |
+| Backend | Next.js API Routes + Node.js | Eliminates need for a separate server in the demo |
+| PDF parsing | `pdf-parse` (Node.js) | PDF text extraction without heavy external dependencies |
+| MD/TXT parsing | Native (fs + string processing) | Direct reading without libraries |
+| Persistence | In-memory (session) + local filesystem | Sufficient for demo, no database |
+| Containerization | Docker + docker-compose | Reproducible and portable execution |
+| Provider SDK | Custom adapters (fetch-based) | Full control, no vendor SDK dependency |
 
-### Justificativa da stack
-- **Next.js como monorepo leve**: para a demo, unificar frontend e backend em um único projeto reduz complexidade operacional. As API routes do Next.js servem como backend BFF (Backend for Frontend).
-- **Tailwind CSS**: velocidade de prototipação com resultado visual profissional.
-- **Sem banco vetorial no MVP**: o volume de dados da demo (poucos documentos, poucos chunks) não justifica a complexidade de configurar pgvector ou Pinecone. Retrieval será feito com busca textual simples in-memory.
-- **Adapters fetch-based**: manter controle total sobre as chamadas aos providers, sem depender de SDKs que podem ter breaking changes ou overhead desnecessário.
+### Stack rationale
+- **Next.js as a lightweight monorepo**: for the demo, unifying frontend and backend in a single project reduces operational complexity. Next.js API routes serve as a BFF (Backend for Frontend).
+- **Tailwind CSS**: prototyping speed with professional visual output.
+- **No vector database in MVP**: the demo data volume (few documents, few chunks) does not justify the complexity of setting up pgvector or Pinecone. Retrieval will be done with simple in-memory text search.
+- **Fetch-based adapters**: maintain full control over provider calls, without depending on SDKs that may have breaking changes or unnecessary overhead.
 
 ---
 
-## Estrutura de frontend
+## Frontend structure
 
 ```
 src/
 ├── app/
-│   ├── layout.tsx           # Layout global (header, theme)
-│   ├── page.tsx             # Página principal (single-page)
+│   ├── layout.tsx           # Global layout (header, theme)
+│   ├── page.tsx             # Main page (single-page)
 │   ├── api/
-│   │   ├── upload/route.ts       # Upload e extração de arquivos
+│   │   ├── upload/route.ts       # File upload and extraction
 │   │   ├── generate/
-│   │   │   ├── spec/route.ts     # Geração de spec
-│   │   │   ├── persona/route.ts  # Geração/sugestão de persona
-│   │   │   ├── prompt/route.ts   # Geração de prompt final
-│   │   │   └── validate/route.ts # Validação de consistência
+│   │   │   ├── spec/route.ts     # Spec generation
+│   │   │   ├── persona/route.ts  # Persona generation/suggestion
+│   │   │   ├── prompt/route.ts   # Final prompt generation
+│   │   │   └── validate/route.ts # Consistency validation
 │   │   ├── provider/
-│   │   │   ├── config/route.ts   # Salvar/ler configuração de provider
-│   │   │   └── test/route.ts     # Teste de conexão com provider
-│   │   └── export/route.ts       # Exportação de artefatos
+│   │   │   ├── config/route.ts   # Save/read provider configuration
+│   │   │   └── test/route.ts     # Provider connection test
+│   │   └── export/route.ts       # Artifact export
 │   └── globals.css
 ├── components/
 │   ├── layout/
@@ -73,31 +73,31 @@ src/
 │       └── ExportButtons.tsx
 ├── lib/
 │   ├── providers/
-│   │   ├── types.ts              # Interface comum de provider
-│   │   ├── registry.ts           # Registro de providers disponíveis
-│   │   ├── selector.ts           # Seleção e fallback
-│   │   ├── openrouter.ts         # Adapter OpenRouter
-│   │   ├── anthropic.ts          # Adapter Anthropic
-│   │   ├── minimax.ts            # Adapter MiniMax
-│   │   └── claude-subscription.ts # Adapter claude-subscription
+│   │   ├── types.ts              # Common provider interface
+│   │   ├── registry.ts           # Registry of available providers
+│   │   ├── selector.ts           # Selection and fallback
+│   │   ├── openrouter.ts         # OpenRouter adapter
+│   │   ├── anthropic.ts          # Anthropic adapter
+│   │   ├── minimax.ts            # MiniMax adapter
+│   │   └── claude-subscription.ts # claude-subscription adapter
 │   ├── parser/
-│   │   ├── pdf.ts                # Extração de PDF
-│   │   ├── text.ts               # Extração de TXT
-│   │   ├── markdown.ts           # Extração de MD
-│   │   └── chunker.ts            # Chunking de texto
+│   │   ├── pdf.ts                # PDF extraction
+│   │   ├── text.ts               # TXT extraction
+│   │   ├── markdown.ts           # MD extraction
+│   │   └── chunker.ts            # Text chunking
 │   ├── prompts/
-│   │   ├── spec-generator.ts     # Prompt para gerar spec
-│   │   ├── persona-generator.ts  # Prompt para gerar persona
-│   │   ├── prompt-builder.ts     # Prompt para gerar prompt final
-│   │   └── validator.ts          # Prompt para validação
+│   │   ├── spec-generator.ts     # Prompt to generate spec
+│   │   ├── persona-generator.ts  # Prompt to generate persona
+│   │   ├── prompt-builder.ts     # Prompt to generate final prompt
+│   │   └── validator.ts          # Prompt for validation
 │   ├── types/
 │   │   ├── spec.ts
 │   │   ├── persona.ts
 │   │   ├── prompt.ts
 │   │   └── validation.ts
 │   └── utils/
-│       ├── export.ts             # Formatação de export
-│       └── config.ts             # Gerenciamento de configuração
+│       ├── export.ts             # Export formatting
+│       └── config.ts             # Configuration management
 └── hooks/
     ├── useProvider.ts
     ├── useUpload.ts
@@ -106,48 +106,48 @@ src/
 
 ---
 
-## Pipeline de ingestão de arquivos
+## File ingestion pipeline
 
 ```
-Arquivo → Validação (tipo, tamanho) → Extração de texto → Limpeza → Chunking → Armazenamento in-memory
+File → Validation (type, size) → Text extraction → Cleanup → Chunking → In-memory storage
 ```
 
-### Detalhamento
+### Details
 
-1. **Validação**: tipo (PDF/TXT/MD), tamanho (≤ 10 MB), quantidade (≤ 3 por sessão).
-2. **Extração**:
-   - PDF: `pdf-parse` → texto plano.
-   - TXT: leitura direta.
-   - MD: leitura direta (preserva estrutura).
-3. **Limpeza**: remoção de linhas vazias excessivas, normalização de espaços.
-4. **Chunking**: segmentação por parágrafos com overlap mínimo. Tamanho alvo: 500-1000 tokens por chunk.
-5. **Armazenamento**: array de chunks in-memory no contexto da sessão.
-
----
-
-## Estratégia de retrieval
-
-Para o MVP, retrieval será **simples e baseado em relevância textual**:
-- Todos os chunks são enviados como contexto (até o limite do modelo).
-- Se o volume exceder o contexto, seleção por keyword matching com TF-IDF básico.
-- Sem banco vetorial no MVP.
-
-**Justificativa**: para a demo, o volume de dados é pequeno o suficiente para enviar todo o contexto. Adicionar vetor seria over-engineering sem ganho de demonstração.
+1. **Validation**: type (PDF/TXT/MD), size (≤ 10 MB), quantity (≤ 3 per session).
+2. **Extraction**:
+   - PDF: `pdf-parse` → plain text.
+   - TXT: direct read.
+   - MD: direct read (preserves structure).
+3. **Cleanup**: removal of excessive blank lines, whitespace normalization.
+4. **Chunking**: segmentation by paragraphs with minimum overlap. Target size: 500–1000 tokens per chunk.
+5. **Storage**: in-memory chunk array in the session context.
 
 ---
 
-## Estratégia de armazenamento
+## Retrieval strategy
 
-- **Sessão**: dados vivem na memória do servidor durante a sessão do usuário.
-- **Configuração de provider**: armazenada em variáveis de ambiente (server-side).
-- **Sem banco de dados**: a demo não precisa de persistência entre sessões.
-- **Filesystem local**: usado apenas para uploads temporários durante processamento.
+For the MVP, retrieval will be **simple and text-relevance-based**:
+- All chunks are sent as context (up to the model's limit).
+- If volume exceeds context, selection by keyword matching with basic TF-IDF.
+- No vector database in the MVP.
+
+**Rationale**: for the demo, the data volume is small enough to send all context. Adding a vector store would be over-engineering with no demonstration gain.
 
 ---
 
-## Camada de provider abstraction
+## Storage strategy
 
-### Interface comum
+- **Session**: data lives in server memory during the user's session.
+- **Provider configuration**: stored in environment variables (server-side).
+- **No database**: the demo does not need cross-session persistence.
+- **Local filesystem**: used only for temporary uploads during processing.
+
+---
+
+## Provider abstraction layer
+
+### Common interface
 
 ```typescript
 interface ProviderAdapter {
@@ -174,28 +174,28 @@ interface GenerateResult {
 }
 ```
 
-### Fluxo de seleção
+### Selection flow
 
 ```
-Requisição de geração
-  → Verificar provider selecionado pelo usuário
-  → Se disponível → usar
-  → Se indisponível → tentar fallback
-  → Se fallback indisponível → retornar erro com mensagem clara
+Generation request
+  → Check provider selected by user
+  → If available → use it
+  → If unavailable → try fallback
+  → If fallback unavailable → return error with clear message
 ```
 
 ### Adapters
 
-| Provider | Base URL | Auth | Modelo padrão |
+| Provider | Base URL | Auth | Default model |
 |---|---|---|---|
 | OpenRouter | `https://openrouter.ai/api/v1` | Bearer token (API key) | `anthropic/claude-3.5-sonnet` |
 | Anthropic | `https://api.anthropic.com/v1` | `x-api-key` header | `claude-3-5-sonnet-20241022` |
 | MiniMax | `https://api.minimax.chat/v1` | Bearer token (API key) | `abab6.5s-chat` |
-| Claude Subscription | Local (via CLI ou proxy) | Sessão local | Modelo ativo na subscrição |
+| Claude Subscription | Local (via CLI or proxy) | Local session | Active model in subscription |
 
 ---
 
-## Estratégia Docker
+## Docker strategy
 
 ### docker-compose.yml
 
@@ -224,31 +224,31 @@ EXPOSE 3000
 CMD ["npm", "start"]
 ```
 
-**Decisão**: container único. A demo não precisa de microserviços.
+**Decision**: single container. The demo does not need microservices.
 
 ---
 
-## Integrações externas
+## External integrations
 
-| Integração | Tipo | Propósito |
+| Integration | Type | Purpose |
 |---|---|---|
-| OpenRouter API | REST | Geração de texto |
-| Anthropic API | REST | Geração de texto |
-| MiniMax API | REST | Geração de texto |
-| Claude CLI | Local (opcional) | Runtime alternativo |
+| OpenRouter API | REST | Text generation |
+| Anthropic API | REST | Text generation |
+| MiniMax API | REST | Text generation |
+| Claude CLI | Local (optional) | Alternative runtime |
 
-Nenhuma integração com Slack, WhatsApp ou canais externos no MVP.
+No integration with Slack, WhatsApp, or external channels in the MVP.
 
 ---
 
 ## Trade-offs
 
-| Decisão | Prós | Contras |
+| Decision | Pros | Cons |
 |---|---|---|
-| Next.js monolítico | Simplicidade, DX, deploy único | Menos flexível para escalar backend |
-| Sem banco vetorial | Menos complexidade, setup rápido | Retrieval menos sofisticado |
-| Sessão em memória | Sem banco de dados | Dados perdidos ao reiniciar |
-| Fetch-based adapters | Controle total | Mais código manual por provider |
-| Container único | Simples | Não escala horizontalmente |
+| Monolithic Next.js | Simplicity, DX, single deploy | Less flexible to scale backend |
+| No vector database | Less complexity, fast setup | Less sophisticated retrieval |
+| In-memory session | No database | Data lost on restart |
+| Fetch-based adapters | Full control | More manual code per provider |
+| Single container | Simple | Does not scale horizontally |
 
-Todos os trade-offs são aceitáveis para uma demo. Se o projeto evoluir, a arquitetura pode ser refatorada.
+All trade-offs are acceptable for a demo. If the project evolves, the architecture can be refactored.

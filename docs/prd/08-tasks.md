@@ -1,312 +1,312 @@
 # 08 — Tasks
 
-## Convenções
-- Cada tarefa começa com verbo.
-- Formato: `T{fase}{número} — {título}`
-- Status: `[ ]` pendente, `[/]` em progresso, `[x]` concluída.
+## Conventions
+- Each task starts with a verb.
+- Format: `T{phase}{number} — {title}`
+- Status: `[ ]` pending, `[/]` in progress, `[x]` completed.
 
 ---
 
-## Fase 0 — Setup
+## Phase 0 — Setup
 
-### T01 — Inicializar projeto Next.js com TypeScript e Tailwind
-- **Descrição**: Criar projeto Next.js 14 com App Router, TypeScript strict e Tailwind CSS. Configurar estrutura de pastas conforme `03-architecture.md`.
-- **Arquivos impactados**: `package.json`, `tsconfig.json`, `tailwind.config.ts`, `next.config.js`, `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/globals.css`
-- **Dependências**: Nenhuma
-- **Critério de conclusão**: `npm run dev` roda sem erros e exibe página em branco estilizada.
+### T01 — Initialize Next.js project with TypeScript and Tailwind
+- **Description**: Create Next.js 14 project with App Router, strict TypeScript, and Tailwind CSS. Configure folder structure as per `03-architecture.md`.
+- **Affected files**: `package.json`, `tsconfig.json`, `tailwind.config.ts`, `next.config.js`, `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/globals.css`
+- **Dependencies**: None
+- **Completion criterion**: `npm run dev` runs without errors and displays a styled blank page.
 - `[ ]`
 
-### T02 — Criar Dockerfile e docker-compose.yml
-- **Descrição**: Criar Dockerfile multi-stage e docker-compose.yml para build e execução da aplicação na porta 3000.
-- **Arquivos impactados**: `Dockerfile`, `docker-compose.yml`, `.dockerignore`
-- **Dependências**: T01
-- **Critério de conclusão**: `docker-compose up --build` sobe a aplicação na porta 3000.
+### T02 — Create Dockerfile and docker-compose.yml
+- **Description**: Create a multi-stage Dockerfile and docker-compose.yml for building and running the application on port 3000.
+- **Affected files**: `Dockerfile`, `docker-compose.yml`, `.dockerignore`
+- **Dependencies**: T01
+- **Completion criterion**: `docker-compose up --build` starts the application on port 3000.
 - `[ ]`
 
-### T03 — Criar .env.example e validação de variáveis
-- **Descrição**: Criar `.env.example` com todas as variáveis documentadas. Criar utilitário de validação que verifica variáveis no startup e exibe mensagens claras.
-- **Arquivos impactados**: `.env.example`, `.gitignore`, `src/lib/utils/config.ts`
-- **Dependências**: T01
-- **Critério de conclusão**: Aplicação inicia sem erro mesmo sem variáveis (modo degradado). Mensagens claras aparecem no log.
+### T03 — Create .env.example and variable validation
+- **Description**: Create `.env.example` with all variables documented. Create validation utility that checks variables at startup and displays clear messages.
+- **Affected files**: `.env.example`, `.gitignore`, `src/lib/utils/config.ts`
+- **Dependencies**: T01
+- **Completion criterion**: Application starts without error even without variables (degraded mode). Clear messages appear in the log.
 - `[ ]`
 
-### T04 — Criar layout global com Header e StepIndicator
-- **Descrição**: Implementar layout global com header (logo, provider badge placeholder), step indicator visual mostrando as etapas do fluxo, e estrutura da página principal com seções vazias.
-- **Arquivos impactados**: `src/app/layout.tsx`, `src/app/page.tsx`, `src/components/layout/Header.tsx`, `src/components/layout/StepIndicator.tsx`, `src/components/layout/ProviderBadge.tsx`
-- **Dependências**: T01
-- **Critério de conclusão**: Página principal exibe header com step indicator visual. Tema dark ou profissional aplicado.
-- `[ ]`
-
----
-
-## Fase 1 — Provider Layer
-
-### T05 — Definir tipos e interface de ProviderAdapter
-- **Descrição**: Criar tipos TypeScript para a interface comum de providers: `ProviderAdapter`, `GenerateParams`, `GenerateResult`, `ProviderConfig`.
-- **Arquivos impactados**: `src/lib/providers/types.ts`
-- **Dependências**: T01
-- **Critério de conclusão**: Tipos compilam sem erro. Interface é autoexplicativa.
-- `[ ]`
-
-### T06 — Implementar adapter OpenRouter
-- **Descrição**: Criar adapter para OpenRouter seguindo a interface `ProviderAdapter`. Implementar `generate()`, `isAvailable()`, `listModels()`, `getDefaultModel()`.
-- **Arquivos impactados**: `src/lib/providers/openrouter.ts`
-- **Dependências**: T05
-- **Critério de conclusão**: Adapter funciona com API key válida. Retorna texto gerado.
-- `[ ]`
-
-### T07 — Implementar adapter Anthropic
-- **Descrição**: Criar adapter para Anthropic Messages API seguindo a interface `ProviderAdapter`.
-- **Arquivos impactados**: `src/lib/providers/anthropic.ts`
-- **Dependências**: T05
-- **Critério de conclusão**: Adapter funciona com API key válida.
-- `[ ]`
-
-### T08 — Implementar adapter MiniMax (estrutura)
-- **Descrição**: Criar adapter para MiniMax seguindo a interface `ProviderAdapter`. Implementar estrutura base.
-- **Arquivos impactados**: `src/lib/providers/minimax.ts`
-- **Dependências**: T05
-- **Critério de conclusão**: Adapter compila e tem estrutura funcional.
-- `[ ]`
-
-### T09 — Implementar adapter claude-subscription (estrutura)
-- **Descrição**: Criar adapter para modo claude-subscription. Implementar como opcional com detecção de disponibilidade.
-- **Arquivos impactados**: `src/lib/providers/claude-subscription.ts`
-- **Dependências**: T05
-- **Critério de conclusão**: Adapter retorna "indisponível" quando ambiente não suporta. Compila sem erro.
-- `[ ]`
-
-### T10 — Implementar registry e selector com fallback
-- **Descrição**: Criar registry de providers, selector que respeita preferência do usuário, e lógica de fallback automático.
-- **Arquivos impactados**: `src/lib/providers/registry.ts`, `src/lib/providers/selector.ts`
-- **Dependências**: T06, T07, T08, T09
-- **Critério de conclusão**: Selector tenta provider preferido, faz fallback se falhar, retorna erro claro se nenhum disponível.
-- `[ ]`
-
-### T11 — Criar API routes de provider (config e test)
-- **Descrição**: Criar `/api/provider/config` (GET/POST) e `/api/provider/test` (POST) para configuração e teste de providers.
-- **Arquivos impactados**: `src/app/api/provider/config/route.ts`, `src/app/api/provider/test/route.ts`
-- **Dependências**: T10
-- **Critério de conclusão**: API aceita configuração, testa conexão e retorna resultado.
-- `[ ]`
-
-### T12 — Criar componente ProviderPanel
-- **Descrição**: Implementar painel lateral/modal de configuração de providers com cards por provider, campo de API key (mascarado), botão de teste e indicador de status.
-- **Arquivos impactados**: `src/components/provider/ProviderPanel.tsx`, `src/components/provider/ProviderCard.tsx`, `src/components/provider/ApiKeyInput.tsx`
-- **Dependências**: T11, T04
-- **Critério de conclusão**: Painel abre via ícone no header. Providers são listados com status. API key pode ser inserida e testada.
-- `[ ]`
-
-### T13 — Implementar ProviderBadge funcional
-- **Descrição**: Conectar `ProviderBadge` no header ao estado real do provider ativo. Exibir nome do provider, indicador visual de fallback.
-- **Arquivos impactados**: `src/components/layout/ProviderBadge.tsx`, `src/hooks/useProvider.ts`
-- **Dependências**: T12
-- **Critério de conclusão**: Badge mostra provider ativo em tempo real. Muda quando provider é alterado.
+### T04 — Create global layout with Header and StepIndicator
+- **Description**: Implement global layout with header (logo, provider badge placeholder), visual step indicator showing the flow stages, and main page structure with empty sections.
+- **Affected files**: `src/app/layout.tsx`, `src/app/page.tsx`, `src/components/layout/Header.tsx`, `src/components/layout/StepIndicator.tsx`, `src/components/layout/ProviderBadge.tsx`
+- **Dependencies**: T01
+- **Completion criterion**: Main page displays header with visual step indicator. Dark or professional theme applied.
 - `[ ]`
 
 ---
 
-## Fase 2 — Ingestão de arquivos
+## Phase 1 — Provider Layer
 
-### T14 — Criar parsers de PDF, TXT e MD
-- **Descrição**: Implementar funções de extração de texto para cada formato. PDF via `pdf-parse`, TXT e MD via leitura direta. Incluir limpeza de texto.
-- **Arquivos impactados**: `src/lib/parser/pdf.ts`, `src/lib/parser/text.ts`, `src/lib/parser/markdown.ts`
-- **Dependências**: T01
-- **Critério de conclusão**: Cada parser extrai texto corretamente de arquivo de teste.
+### T05 — Define ProviderAdapter types and interface
+- **Description**: Create TypeScript types for the common provider interface: `ProviderAdapter`, `GenerateParams`, `GenerateResult`, `ProviderConfig`.
+- **Affected files**: `src/lib/providers/types.ts`
+- **Dependencies**: T01
+- **Completion criterion**: Types compile without error. Interface is self-explanatory.
 - `[ ]`
 
-### T15 — Implementar chunker de texto
-- **Descrição**: Criar função de chunking por parágrafos com tamanho alvo de 500-1000 tokens e overlap mínimo. Retornar array de chunks com metadados (posição, tamanho).
-- **Arquivos impactados**: `src/lib/parser/chunker.ts`
-- **Dependências**: T14
-- **Critério de conclusão**: Texto longo é segmentado em chunks dentro da faixa de tamanho.
+### T06 — Implement OpenRouter adapter
+- **Description**: Create adapter for OpenRouter following the `ProviderAdapter` interface. Implement `generate()`, `isAvailable()`, `listModels()`, `getDefaultModel()`.
+- **Affected files**: `src/lib/providers/openrouter.ts`
+- **Dependencies**: T05
+- **Completion criterion**: Adapter works with a valid API key. Returns generated text.
 - `[ ]`
 
-### T16 — Criar API route de upload
-- **Descrição**: Implementar `/api/upload` que recebe FormData com arquivos, valida tipo e tamanho, extrai texto e retorna chunks.
-- **Arquivos impactados**: `src/app/api/upload/route.ts`
-- **Dependências**: T14, T15
-- **Critério de conclusão**: API aceita PDF/TXT/MD, rejeita outros formatos, retorna chunks.
+### T07 — Implement Anthropic adapter
+- **Description**: Create adapter for the Anthropic Messages API following the `ProviderAdapter` interface.
+- **Affected files**: `src/lib/providers/anthropic.ts`
+- **Dependencies**: T05
+- **Completion criterion**: Adapter works with a valid API key.
 - `[ ]`
 
-### T17 — Criar componente FileDropZone
-- **Descrição**: Implementar área de drag & drop com botão de seleção de arquivo. Visual atraente, estados hover/active, validação de tipo.
-- **Arquivos impactados**: `src/components/upload/FileDropZone.tsx`
-- **Dependências**: T04
-- **Critério de conclusão**: Drag & drop funciona. Arquivos são enviados ao backend.
+### T08 — Implement MiniMax adapter (structure)
+- **Description**: Create adapter for MiniMax following the `ProviderAdapter` interface. Implement base structure.
+- **Affected files**: `src/lib/providers/minimax.ts`
+- **Dependencies**: T05
+- **Completion criterion**: Adapter compiles and has a functional structure.
 - `[ ]`
 
-### T18 — Criar componentes FileCard e ChunkPreview
-- **Descrição**: Implementar card de arquivo (nome, tipo, tamanho, status) e preview scrollável de chunks extraídos.
-- **Arquivos impactados**: `src/components/upload/FileCard.tsx`, `src/components/upload/ChunkPreview.tsx`
-- **Dependências**: T16, T17
-- **Critério de conclusão**: Após upload, card mostra info do arquivo e chunks são visualizáveis.
+### T09 — Implement claude-subscription adapter (structure)
+- **Description**: Create adapter for claude-subscription mode. Implement as optional with availability detection.
+- **Affected files**: `src/lib/providers/claude-subscription.ts`
+- **Dependencies**: T05
+- **Completion criterion**: Adapter returns "unavailable" when the environment doesn't support it. Compiles without error.
 - `[ ]`
 
----
-
-## Fase 3 — Spec Engine
-
-### T19 — Implementar meta-prompt spec-generator
-- **Descrição**: Criar o prompt template para geração de spec de prompt. Definir instruções, formato de saída (JSON), guardrails.
-- **Arquivos impactados**: `src/lib/prompts/spec-generator.ts`
-- **Dependências**: T05
-- **Critério de conclusão**: Template produz spec estruturada quando alimentado com conhecimento e objetivo.
+### T10 — Implement registry and selector with fallback
+- **Description**: Create provider registry, selector that respects user preference, and automatic fallback logic.
+- **Affected files**: `src/lib/providers/registry.ts`, `src/lib/providers/selector.ts`
+- **Dependencies**: T06, T07, T08, T09
+- **Completion criterion**: Selector tries preferred provider, falls back if it fails, returns clear error if none available.
 - `[ ]`
 
-### T20 — Criar API route /api/generate/spec
-- **Descrição**: Implementar endpoint que recebe chunks + objetivo, chama provider via selector, retorna spec gerada.
-- **Arquivos impactados**: `src/app/api/generate/spec/route.ts`
-- **Dependências**: T10, T19
-- **Critério de conclusão**: API retorna spec em JSON. Fallback funciona.
+### T11 — Create provider API routes (config and test)
+- **Description**: Create `/api/provider/config` (GET/POST) and `/api/provider/test` (POST) for provider configuration and testing.
+- **Affected files**: `src/app/api/provider/config/route.ts`, `src/app/api/provider/test/route.ts`
+- **Dependencies**: T10
+- **Completion criterion**: API accepts configuration, tests connection, and returns result.
 - `[ ]`
 
-### T21 — Criar componentes ObjectiveInput e SpecCard
-- **Descrição**: Implementar campo de objetivo com sugestão automática. Implementar card de spec com visualização estruturada e botão de edição.
-- **Arquivos impactados**: `src/components/objective/ObjectiveInput.tsx`, `src/components/spec/SpecCard.tsx`, `src/components/spec/SpecEditor.tsx`
-- **Dependências**: T18, T20
-- **Critério de conclusão**: Objetivo pode ser definido. Spec é gerada e exibida com loading state.
+### T12 — Create ProviderPanel component
+- **Description**: Implement side panel/modal for provider configuration with cards per provider, API key field (masked), test button, and status indicator.
+- **Affected files**: `src/components/provider/ProviderPanel.tsx`, `src/components/provider/ProviderCard.tsx`, `src/components/provider/ApiKeyInput.tsx`
+- **Dependencies**: T11, T04
+- **Completion criterion**: Panel opens via gear icon in header. Providers are listed with status. API key can be entered and tested.
 - `[ ]`
 
----
-
-## Fase 4 — Persona Engine
-
-### T22 — Definir tipos de persona
-- **Descrição**: Criar tipos TypeScript para PersonaSpec com todos os campos definidos em `04-agent-persona-spec.md`.
-- **Arquivos impactados**: `src/lib/types/persona.ts`
-- **Dependências**: T01
-- **Critério de conclusão**: Tipos compilam e cobrem todos os campos da spec.
-- `[ ]`
-
-### T23 — Implementar meta-prompt persona-generator
-- **Descrição**: Criar o prompt template para sugestão de persona. Instrui o modelo a gerar persona concreta, não genérica, com exemplos e anti-exemplos.
-- **Arquivos impactados**: `src/lib/prompts/persona-generator.ts`
-- **Dependências**: T19, T22
-- **Critério de conclusão**: Template produz persona estruturada coerente com domínio.
-- `[ ]`
-
-### T24 — Criar API route /api/generate/persona
-- **Descrição**: Implementar endpoint que recebe spec + chunks, chama provider, retorna persona sugerida.
-- **Arquivos impactados**: `src/app/api/generate/persona/route.ts`
-- **Dependências**: T10, T23
-- **Critério de conclusão**: API retorna persona em JSON. Persona é coerente com spec.
-- `[ ]`
-
-### T25 — Criar componente PersonaDesigner
-- **Descrição**: Implementar painel visual de criação de persona com todos os campos interativos: sliders (formalidade, empatia, objetividade), chips (vocabulário), selects (tom principal, postura), textarea (limites), preview de exemplos.
-- **Arquivos impactados**: `src/components/persona/PersonaDesigner.tsx`, `src/components/persona/ToneSlider.tsx`, `src/components/persona/VocabularyChips.tsx`, `src/components/persona/ExamplePreview.tsx`
-- **Dependências**: T22, T24
-- **Critério de conclusão**: Todos os campos são editáveis. Persona sugerida preenche campos automaticamente. Interface é visualmente impactante.
+### T13 — Implement functional ProviderBadge
+- **Description**: Connect `ProviderBadge` in the header to the real active provider state. Display provider name, visual fallback indicator.
+- **Affected files**: `src/components/layout/ProviderBadge.tsx`, `src/hooks/useProvider.ts`
+- **Dependencies**: T12
+- **Completion criterion**: Badge shows active provider in real time. Changes when provider is altered.
 - `[ ]`
 
 ---
 
-## Fase 5 — Prompt Builder
+## Phase 2 — File ingestion
 
-### T26 — Implementar meta-prompt prompt-builder
-- **Descrição**: Criar prompt template que combina spec + persona + conhecimento para gerar prompt final operacional.
-- **Arquivos impactados**: `src/lib/prompts/prompt-builder.ts`
-- **Dependências**: T19, T23
-- **Critério de conclusão**: Template produz prompt final estruturado com todas as seções.
+### T14 — Create PDF, TXT, and MD parsers
+- **Description**: Implement text extraction functions for each format. PDF via `pdf-parse`, TXT and MD via direct reading. Include text cleanup.
+- **Affected files**: `src/lib/parser/pdf.ts`, `src/lib/parser/text.ts`, `src/lib/parser/markdown.ts`
+- **Dependencies**: T01
+- **Completion criterion**: Each parser correctly extracts text from a test file.
 - `[ ]`
 
-### T27 — Criar API route /api/generate/prompt
-- **Descrição**: Implementar endpoint que recebe spec + persona + chunks, chama provider, retorna prompt final.
-- **Arquivos impactados**: `src/app/api/generate/prompt/route.ts`
-- **Dependências**: T10, T26
-- **Critério de conclusão**: API retorna prompt final em Markdown.
+### T15 — Implement text chunker
+- **Description**: Create paragraph-based chunking function with a 500–1000 token target size and minimum overlap. Return array of chunks with metadata (position, size).
+- **Affected files**: `src/lib/parser/chunker.ts`
+- **Dependencies**: T14
+- **Completion criterion**: Long text is segmented into chunks within the size range.
 - `[ ]`
 
-### T28 — Criar componentes PromptOutput e PromptActions
-- **Descrição**: Implementar visualização do prompt final com syntax highlighting (Markdown). Botões de copiar, regenerar e editar.
-- **Arquivos impactados**: `src/components/prompt/PromptOutput.tsx`, `src/components/prompt/PromptActions.tsx`
-- **Dependências**: T27
-- **Critério de conclusão**: Prompt final é exibido com formatação profissional. Copiar funciona.
+### T16 — Create upload API route
+- **Description**: Implement `/api/upload` that receives FormData with files, validates type and size, extracts text, and returns chunks.
+- **Affected files**: `src/app/api/upload/route.ts`
+- **Dependencies**: T14, T15
+- **Completion criterion**: API accepts PDF/TXT/MD, rejects other formats, returns chunks.
 - `[ ]`
 
----
-
-## Fase 6 — Validação
-
-### T29 — Implementar meta-prompt consistency-validator
-- **Descrição**: Criar prompt template que valida consistência entre spec, persona e prompt final. Retorna checklist e score.
-- **Arquivos impactados**: `src/lib/prompts/validator.ts`
-- **Dependências**: T26
-- **Critério de conclusão**: Template identifica inconsistências e sugere melhorias.
+### T17 — Create FileDropZone component
+- **Description**: Implement drag & drop area with file selection button. Attractive visuals, hover/active states, type validation.
+- **Affected files**: `src/components/upload/FileDropZone.tsx`
+- **Dependencies**: T04
+- **Completion criterion**: Drag & drop works. Files are sent to the backend.
 - `[ ]`
 
-### T30 — Criar API route /api/generate/validate
-- **Descrição**: Implementar endpoint que recebe spec + persona + prompt final, chama provider, retorna validação.
-- **Arquivos impactados**: `src/app/api/generate/validate/route.ts`
-- **Dependências**: T10, T29
-- **Critério de conclusão**: API retorna checklist com ✅/❌ e score.
-- `[ ]`
-
-### T31 — Criar componentes ValidationCard e ScoreIndicator
-- **Descrição**: Implementar card de validação com checklist visual, score circular e sugestões de melhoria.
-- **Arquivos impactados**: `src/components/validation/ValidationCard.tsx`, `src/components/validation/ScoreIndicator.tsx`
-- **Dependências**: T30
-- **Critério de conclusão**: Validação é exibida com indicadores visuais claros.
+### T18 — Create FileCard and ChunkPreview components
+- **Description**: Implement file card (name, type, size, status) and scrollable preview of extracted chunks.
+- **Affected files**: `src/components/upload/FileCard.tsx`, `src/components/upload/ChunkPreview.tsx`
+- **Dependencies**: T16, T17
+- **Completion criterion**: After upload, card shows file info and chunks are viewable.
 - `[ ]`
 
 ---
 
-## Fase 7 — Export
+## Phase 3 — Spec Engine
 
-### T32 — Implementar lógica de export
-- **Descrição**: Criar funções que consolidam spec, persona, prompt e validação em Markdown e JSON para download.
-- **Arquivos impactados**: `src/lib/utils/export.ts`, `src/app/api/export/route.ts`
-- **Dependências**: T28, T31
-- **Critério de conclusão**: Markdown e JSON são gerados corretamente com todos os artefatos.
+### T19 — Implement spec-generator meta-prompt
+- **Description**: Create the prompt template for spec generation. Define instructions, output format (JSON), guardrails.
+- **Affected files**: `src/lib/prompts/spec-generator.ts`
+- **Dependencies**: T05
+- **Completion criterion**: Template produces a structured spec when fed with knowledge and objective.
 - `[ ]`
 
-### T33 — Criar componente ExportButtons
-- **Descrição**: Implementar botões de exportação com ícones, download automático, feedback de sucesso.
-- **Arquivos impactados**: `src/components/export/ExportButtons.tsx`
-- **Dependências**: T32
-- **Critério de conclusão**: Download funciona em MD e JSON.
+### T20 — Create API route /api/generate/spec
+- **Description**: Implement endpoint that receives chunks + objective, calls provider via selector, returns generated spec.
+- **Affected files**: `src/app/api/generate/spec/route.ts`
+- **Dependencies**: T10, T19
+- **Completion criterion**: API returns spec in JSON. Fallback works.
 - `[ ]`
 
----
-
-## Fase 8 — Polish
-
-### T34 — Implementar loading states e skeletons
-- **Descrição**: Adicionar skeleton loading em todas as etapas de geração. Animações pulse. Mensagens de progresso.
-- **Arquivos impactados**: Todos os componentes de geração
-- **Dependências**: Fases 3-7
-- **Critério de conclusão**: Nenhuma geração ocorre sem feedback visual.
-- `[ ]`
-
-### T35 — Implementar empty states e error states
-- **Descrição**: Adicionar mensagens orientadoras em empty states e ações sugeridas em error states em toda a aplicação.
-- **Arquivos impactados**: Todos os componentes
-- **Dependências**: Fases 3-7
-- **Critério de conclusão**: Nenhum estado vazio ou de erro está sem tratamento visual.
-- `[ ]`
-
-### T36 — Implementar tema visual e micro-animações
-- **Descrição**: Refinar tema dark/profissional. Adicionar transições suaves, hover effects, micro-animações em interações.
-- **Arquivos impactados**: `src/app/globals.css`, componentes diversos
-- **Dependências**: T34, T35
-- **Critério de conclusão**: Interface parece produto real. Interações são fluidas.
-- `[ ]`
-
-### T37 — Testar fluxo completo end-to-end
-- **Descrição**: Executar fluxo completo com arquivo real: upload → spec → persona → prompt → validação → export. Verificar cada etapa.
-- **Arquivos impactados**: Nenhum (teste)
-- **Dependências**: Todas as tarefas anteriores
-- **Critério de conclusão**: Fluxo completo funciona sem erro não tratado. Demo é gravável.
+### T21 — Create ObjectiveInput and SpecCard components
+- **Description**: Implement objective field with automatic suggestion. Implement spec card with structured visualization and edit button.
+- **Affected files**: `src/components/objective/ObjectiveInput.tsx`, `src/components/spec/SpecCard.tsx`, `src/components/spec/SpecEditor.tsx`
+- **Dependencies**: T18, T20
+- **Completion criterion**: Objective can be defined. Spec is generated and displayed with loading state.
 - `[ ]`
 
 ---
 
-## Ordem ideal de execução
+## Phase 4 — Persona Engine
+
+### T22 — Define persona types
+- **Description**: Create TypeScript types for PersonaSpec with all fields defined in `04-agent-persona-spec.md`.
+- **Affected files**: `src/lib/types/persona.ts`
+- **Dependencies**: T01
+- **Completion criterion**: Types compile and cover all spec fields.
+- `[ ]`
+
+### T23 — Implement persona-generator meta-prompt
+- **Description**: Create the prompt template for persona suggestion. Instructs the model to generate a concrete, non-generic persona with examples and anti-examples.
+- **Affected files**: `src/lib/prompts/persona-generator.ts`
+- **Dependencies**: T19, T22
+- **Completion criterion**: Template produces a structured persona coherent with the domain.
+- `[ ]`
+
+### T24 — Create API route /api/generate/persona
+- **Description**: Implement endpoint that receives spec + chunks, calls provider, returns suggested persona.
+- **Affected files**: `src/app/api/generate/persona/route.ts`
+- **Dependencies**: T10, T23
+- **Completion criterion**: API returns persona in JSON. Persona is coherent with spec.
+- `[ ]`
+
+### T25 — Create PersonaDesigner component
+- **Description**: Implement visual persona creation panel with all interactive fields: sliders (formality, empathy, objectivity), chips (vocabulary), selects (main tone, posture), textarea (limits), examples preview.
+- **Affected files**: `src/components/persona/PersonaDesigner.tsx`, `src/components/persona/ToneSlider.tsx`, `src/components/persona/VocabularyChips.tsx`, `src/components/persona/ExamplePreview.tsx`
+- **Dependencies**: T22, T24
+- **Completion criterion**: All fields are editable. Suggested persona populates fields automatically. Interface is visually impactful.
+- `[ ]`
+
+---
+
+## Phase 5 — Prompt Builder
+
+### T26 — Implement prompt-builder meta-prompt
+- **Description**: Create prompt template that combines spec + persona + knowledge to generate an operational final prompt.
+- **Affected files**: `src/lib/prompts/prompt-builder.ts`
+- **Dependencies**: T19, T23
+- **Completion criterion**: Template produces a structured final prompt with all sections.
+- `[ ]`
+
+### T27 — Create API route /api/generate/prompt
+- **Description**: Implement endpoint that receives spec + persona + chunks, calls provider, returns final prompt.
+- **Affected files**: `src/app/api/generate/prompt/route.ts`
+- **Dependencies**: T10, T26
+- **Completion criterion**: API returns final prompt in Markdown.
+- `[ ]`
+
+### T28 — Create PromptOutput and PromptActions components
+- **Description**: Implement final prompt visualization with syntax highlighting (Markdown). Buttons to copy, regenerate, and edit.
+- **Affected files**: `src/components/prompt/PromptOutput.tsx`, `src/components/prompt/PromptActions.tsx`
+- **Dependencies**: T27
+- **Completion criterion**: Final prompt is displayed with professional formatting. Copy works.
+- `[ ]`
+
+---
+
+## Phase 6 — Validation
+
+### T29 — Implement consistency-validator meta-prompt
+- **Description**: Create prompt template that validates consistency between spec, persona, and final prompt. Returns checklist and score.
+- **Affected files**: `src/lib/prompts/validator.ts`
+- **Dependencies**: T26
+- **Completion criterion**: Template identifies inconsistencies and suggests improvements.
+- `[ ]`
+
+### T30 — Create API route /api/generate/validate
+- **Description**: Implement endpoint that receives spec + persona + final prompt, calls provider, returns validation.
+- **Affected files**: `src/app/api/generate/validate/route.ts`
+- **Dependencies**: T10, T29
+- **Completion criterion**: API returns checklist with ✅/❌ and score.
+- `[ ]`
+
+### T31 — Create ValidationCard and ScoreIndicator components
+- **Description**: Implement validation card with visual checklist, circular score, and improvement suggestions.
+- **Affected files**: `src/components/validation/ValidationCard.tsx`, `src/components/validation/ScoreIndicator.tsx`
+- **Dependencies**: T30
+- **Completion criterion**: Validation is displayed with clear visual indicators.
+- `[ ]`
+
+---
+
+## Phase 7 — Export
+
+### T32 — Implement export logic
+- **Description**: Create functions that consolidate spec, persona, prompt, and validation into Markdown and JSON for download.
+- **Affected files**: `src/lib/utils/export.ts`, `src/app/api/export/route.ts`
+- **Dependencies**: T28, T31
+- **Completion criterion**: Markdown and JSON are correctly generated with all artifacts.
+- `[ ]`
+
+### T33 — Create ExportButtons component
+- **Description**: Implement export buttons with icons, automatic download, success feedback.
+- **Affected files**: `src/components/export/ExportButtons.tsx`
+- **Dependencies**: T32
+- **Completion criterion**: Download works in MD and JSON.
+- `[ ]`
+
+---
+
+## Phase 8 — Polish
+
+### T34 — Implement loading states and skeletons
+- **Description**: Add skeleton loading in all generation steps. Pulse animations. Progress messages.
+- **Affected files**: All generation components
+- **Dependencies**: Phases 3–7
+- **Completion criterion**: No generation occurs without visual feedback.
+- `[ ]`
+
+### T35 — Implement empty states and error states
+- **Description**: Add guidance messages in empty states and suggested actions in error states throughout the application.
+- **Affected files**: All components
+- **Dependencies**: Phases 3–7
+- **Completion criterion**: No empty or error state is left without visual treatment.
+- `[ ]`
+
+### T36 — Implement visual theme and micro-animations
+- **Description**: Refine dark/professional theme. Add smooth transitions, hover effects, micro-animations on interactions.
+- **Affected files**: `src/app/globals.css`, various components
+- **Dependencies**: T34, T35
+- **Completion criterion**: Interface looks like a real product. Interactions are fluid.
+- `[ ]`
+
+### T37 — Test complete end-to-end flow
+- **Description**: Run the full flow with a real file: upload → spec → persona → prompt → validation → export. Verify each step.
+- **Affected files**: None (test)
+- **Dependencies**: All previous tasks
+- **Completion criterion**: Full flow works without unhandled error. Demo is recordable.
+- `[ ]`
+
+---
+
+## Ideal execution order
 
 ```
-T01 → T02, T03, T04 (paralelos) → T05 → T06, T07, T08, T09 (paralelos)
-→ T10 → T11 → T12 → T13 → T14, T15 (paralelos) → T16 → T17 → T18
+T01 → T02, T03, T04 (parallel) → T05 → T06, T07, T08, T09 (parallel)
+→ T10 → T11 → T12 → T13 → T14, T15 (parallel) → T16 → T17 → T18
 → T19 → T20 → T21 → T22 → T23 → T24 → T25 → T26 → T27 → T28
 → T29 → T30 → T31 → T32 → T33 → T34 → T35 → T36 → T37
 ```

@@ -1,110 +1,110 @@
 # 10 — Secrets and Environments
 
-## Variáveis de ambiente
+## Environment variables
 
-### Obrigatórias (ao menos uma)
+### Required (at least one)
 
-| Variável | Descrição | Exemplo |
+| Variable | Description | Example |
 |---|---|---|
-| `OPENROUTER_API_KEY` | API key para OpenRouter | `sk-or-v1-xxxx...` |
-| `ANTHROPIC_API_KEY` | API key para Anthropic | `sk-ant-xxxx...` |
-| `MINIMAX_API_KEY` | API key para MiniMax | `eyJhbGci...` |
+| `OPENROUTER_API_KEY` | API key for OpenRouter | `sk-or-v1-xxxx...` |
+| `ANTHROPIC_API_KEY` | API key for Anthropic | `sk-ant-xxxx...` |
+| `MINIMAX_API_KEY` | API key for MiniMax | `eyJhbGci...` |
 
-**Regra**: pelo menos uma API key deve estar configurada para que o sistema funcione. Se nenhuma estiver presente, o sistema inicia em modo degradado e exibe banner de configuração.
+**Rule**: at least one API key must be configured for the system to function. If none is present, the system starts in degraded mode and displays a configuration banner.
 
-### Opcionais
+### Optional
 
-| Variável | Descrição | Default |
+| Variable | Description | Default |
 |---|---|---|
-| `CLAUDE_SUBSCRIPTION_ENABLED` | Habilita modo de subscrição local | `false` |
-| `DEFAULT_PROVIDER` | Provider padrão quando há múltiplos | `openrouter` |
-| `FALLBACK_PROVIDER` | Provider de fallback | `anthropic` |
-| `NODE_ENV` | Ambiente de execução | `development` |
-| `PORT` | Porta do servidor | `3000` |
-| `MAX_FILE_SIZE_MB` | Tamanho máximo de arquivo em MB | `10` |
-| `MAX_FILES_PER_SESSION` | Número máximo de arquivos por sessão | `3` |
-| `LOG_LEVEL` | Nível de log | `info` |
+| `CLAUDE_SUBSCRIPTION_ENABLED` | Enables local subscription mode | `false` |
+| `DEFAULT_PROVIDER` | Default provider when multiple are available | `openrouter` |
+| `FALLBACK_PROVIDER` | Fallback provider | `anthropic` |
+| `NODE_ENV` | Execution environment | `development` |
+| `PORT` | Server port | `3000` |
+| `MAX_FILE_SIZE_MB` | Maximum file size in MB | `10` |
+| `MAX_FILES_PER_SESSION` | Maximum number of files per session | `3` |
+| `LOG_LEVEL` | Log level | `info` |
 
 ---
 
-## Ambientes suportados
+## Supported environments
 
-### 1. Local (desenvolvimento)
-- Docker com docker-compose
-- `.env` local com chaves reais do desenvolvedor
+### 1. Local (development)
+- Docker with docker-compose
+- Local `.env` with developer's real keys
 - Hot reload via volume mount
 - `NODE_ENV=development`
 
 ### 2. Demo
-- Docker standalone
-- `.env` com chaves de demonstração
+- Standalone Docker
+- `.env` with demo keys
 - `NODE_ENV=production`
-- Otimizado para apresentação
+- Optimized for presentation
 
-### 3. CI/Test (futuro)
-- Sem API keys reais
-- Mocks de providers
+### 3. CI/Test (future)
+- No real API keys
+- Provider mocks
 - `NODE_ENV=test`
 
 ---
 
-## Política de segurança
+## Security policy
 
-### Regras absolutas
-1. **Nunca commitar chaves reais** → `.env` está no `.gitignore`
-2. **Nunca expor chaves no frontend** → toda autenticação passa pelo backend (API routes)
-3. **Nunca logar chaves** → mascarar em logs (`sk-or-v1-****`)
-4. **Nunca enviar chaves em response** → API routes retornam apenas status de configuração, não a key
-5. **Validar presença antes de usar** → checagem explícita antes de cada chamada
+### Absolute rules
+1. **Never commit real keys** → `.env` is in `.gitignore`
+2. **Never expose keys on the frontend** → all authentication goes through the backend (API routes)
+3. **Never log keys** → mask in logs (`sk-or-v1-****`)
+4. **Never send keys in response** → API routes return only configuration status, not the key
+5. **Validate presence before use** → explicit check before each call
 
-### O que o frontend sabe
-- Quais providers estão configurados (boolean por provider)
-- Qual é o provider ativo
-- Status de cada provider (configurado, não configurado, indisponível)
+### What the frontend knows
+- Which providers are configured (boolean per provider)
+- Which is the active provider
+- Status of each provider (configured, not configured, unavailable)
 
-### O que o frontend NÃO sabe
+### What the frontend does NOT know
 - API keys
-- Valores de variáveis sensíveis
-- Detalhes de autenticação
+- Values of sensitive variables
+- Authentication details
 
 ---
 
-## Fluxo de bootstrap local
+## Local bootstrap flow
 
-### Passo a passo para rodar o projeto pela primeira vez
+### Step-by-step to run the project for the first time
 
 ```bash
-# 1. Clonar o repositório
+# 1. Clone the repository
 git clone <repo-url>
 cd tool-prompt-maciel-v2
 
-# 2. Copiar arquivo de exemplo
+# 2. Copy the example file
 cp .env.example .env
 
-# 3. Editar .env com suas chaves
-# Preencha pelo menos uma API key:
-# OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
-# ANTHROPIC_API_KEY=sk-ant-sua-chave-aqui
-# MINIMAX_API_KEY=sua-chave-aqui
+# 3. Edit .env with your keys
+# Fill in at least one API key:
+# OPENROUTER_API_KEY=sk-or-v1-your-key-here
+# ANTHROPIC_API_KEY=sk-ant-your-key-here
+# MINIMAX_API_KEY=your-key-here
 
-# 4. Subir com Docker
+# 4. Start with Docker
 docker-compose up --build
 
-# 5. Acessar
+# 5. Access
 # http://localhost:3000
 ```
 
-### Sem Docker (desenvolvimento)
+### Without Docker (development)
 
 ```bash
-# 1-3: Mesmos passos acima
-# 4. Instalar dependências
+# 1-3: Same steps as above
+# 4. Install dependencies
 npm install
 
-# 5. Rodar em modo dev
+# 5. Run in dev mode
 npm run dev
 
-# 6. Acessar
+# 6. Access
 # http://localhost:3000
 ```
 
@@ -114,13 +114,13 @@ npm run dev
 
 ```bash
 # ============================================
-# PromptForge — Variáveis de Ambiente
+# PromptForge — Environment Variables
 # ============================================
-# Copie este arquivo para .env e preencha
-# pelo menos UMA API key de provider.
+# Copy this file to .env and fill in
+# at least ONE provider API key.
 # ============================================
 
-# --- Providers (preencha pelo menos um) ---
+# --- Providers (fill in at least one) ---
 
 # OpenRouter - https://openrouter.ai/keys
 OPENROUTER_API_KEY=
@@ -131,45 +131,45 @@ ANTHROPIC_API_KEY=
 # MiniMax - https://www.minimax.chat/
 MINIMAX_API_KEY=
 
-# --- Configuração de Provider ---
+# --- Provider Configuration ---
 
-# Provider padrão: openrouter | anthropic | minimax
+# Default provider: openrouter | anthropic | minimax
 DEFAULT_PROVIDER=openrouter
 
-# Provider de fallback: openrouter | anthropic | minimax
+# Fallback provider: openrouter | anthropic | minimax
 FALLBACK_PROVIDER=anthropic
 
-# --- Modo Claude Subscription (opcional) ---
-# Habilita runtime local com subscrição do Claude.
-# Requer ambiente compatível. Não é obrigatório.
+# --- Claude Subscription Mode (optional) ---
+# Enables local runtime with Claude subscription.
+# Requires compatible environment. Not mandatory.
 CLAUDE_SUBSCRIPTION_ENABLED=false
 
-# --- Aplicação ---
+# --- Application ---
 
-# Porta do servidor
+# Server port
 PORT=3000
 
-# Ambiente: development | production | test
+# Environment: development | production | test
 NODE_ENV=development
 
-# Tamanho máximo de arquivo em MB
+# Maximum file size in MB
 MAX_FILE_SIZE_MB=10
 
-# Número máximo de arquivos por sessão
+# Maximum number of files per session
 MAX_FILES_PER_SESSION=3
 
-# Nível de log: debug | info | warn | error
+# Log level: debug | info | warn | error
 LOG_LEVEL=info
 ```
 
 ---
 
-## Validação de configuração
+## Configuration validation
 
-### No startup da aplicação
+### At application startup
 
 ```typescript
-// Pseudocódigo da validação
+// Pseudocode for validation
 function validateConfig() {
   const providers = {
     openrouter: process.env.OPENROUTER_API_KEY,
@@ -181,52 +181,52 @@ function validateConfig() {
     .filter(([_, key]) => key && key.length > 0);
 
   if (configured.length === 0) {
-    console.warn('⚠️  Nenhum provider configurado.');
-    console.warn('   Preencha pelo menos uma API key no arquivo .env');
-    console.warn('   A aplicação iniciará em modo degradado.');
+    console.warn('⚠️  No provider configured.');
+    console.warn('   Fill in at least one API key in the .env file');
+    console.warn('   The application will start in degraded mode.');
   } else {
     configured.forEach(([name]) => {
-      console.log(`✅ Provider configurado: ${name}`);
+      console.log(`✅ Provider configured: ${name}`);
     });
   }
 
   if (process.env.CLAUDE_SUBSCRIPTION_ENABLED === 'true') {
-    console.log('ℹ️  Modo claude-subscription habilitado (disponibilidade será verificada em runtime).');
+    console.log('ℹ️  claude-subscription mode enabled (availability will be checked at runtime).');
   }
 }
 ```
 
 ---
 
-## Tratamento de ausência de chave
+## Handling missing keys
 
-| Situação | Comportamento |
+| Situation | Behavior |
 |---|---|
-| Nenhuma API key | App inicia. Banner: "Configure um provider para começar." Botões de geração desabilitados. |
-| Uma API key | App funciona normalmente com o provider configurado. |
-| Múltiplas API keys | App usa `DEFAULT_PROVIDER`. Fallback para `FALLBACK_PROVIDER`. |
-| `DEFAULT_PROVIDER` sem key | App escolhe automaticamente um provider que tem key configurada. |
-| `CLAUDE_SUBSCRIPTION_ENABLED=true` sem suporte | App ignora silenciosamente. Usa providers por API key. |
+| No API key | App starts. Banner: "Configure a provider to get started." Generation buttons disabled. |
+| One API key | App works normally with the configured provider. |
+| Multiple API keys | App uses `DEFAULT_PROVIDER`. Falls back to `FALLBACK_PROVIDER`. |
+| `DEFAULT_PROVIDER` without key | App automatically chooses a provider that has a key configured. |
+| `CLAUDE_SUBSCRIPTION_ENABLED=true` without support | App silently ignores. Uses API-key-based providers. |
 
 ---
 
-## Estratégia para modo claude-subscription
+## Strategy for claude-subscription mode
 
-1. Habilitável via `CLAUDE_SUBSCRIPTION_ENABLED=true`.
-2. No boot, adapter tenta detectar disponibilidade do ambiente.
-3. Se disponível → aparece como opção no painel de providers.
-4. Se indisponível → aparece como "Indisponível" no painel, sem bloquear o sistema.
-5. Se selecionado como padrão mas indisponível → fallback automático.
-6. Log claro: "Modo claude-subscription habilitado mas indisponível neste ambiente."
+1. Enableable via `CLAUDE_SUBSCRIPTION_ENABLED=true`.
+2. At boot, adapter attempts to detect environment availability.
+3. If available → appears as option in the provider panel.
+4. If unavailable → appears as "Unavailable" in the panel, without blocking the system.
+5. If selected as default but unavailable → automatic fallback.
+6. Clear log: "claude-subscription mode enabled but unavailable in this environment."
 
 ---
 
-## Riscos e mitigação
+## Risks and mitigation
 
-| Risco | Mitigação |
+| Risk | Mitigation |
 |---|---|
-| Chave commitada acidentalmente | `.env` no `.gitignore`. Pre-commit hook recomendado. |
-| Chave exposta em log | Mascarar chaves em logs (últimos 4 chars apenas). |
-| Chave exposta em response | API routes nunca retornam keys, apenas status boolean. |
-| Chave inválida sem feedback | Teste de conexão na configuração retorna erro claro. |
-| Múltiplas pessoas compartilhando `.env` | Cada desenvolvedor mantém seu `.env` local. |
+| Key accidentally committed | `.env` in `.gitignore`. Pre-commit hook recommended. |
+| Key exposed in log | Mask keys in logs (last 4 chars only). |
+| Key exposed in response | API routes never return keys, only boolean status. |
+| Invalid key without feedback | Connection test in configuration returns clear error. |
+| Multiple people sharing `.env` | Each developer maintains their own local `.env`. |

@@ -1,149 +1,149 @@
 # 06 — Evals and Risks
 
-## Categorias de risco
+## Risk categories
 
 ---
 
-## 1. Riscos técnicos
+## 1. Technical risks
 
-| Risco | Probabilidade | Impacto | Mitigação |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| PDF sem texto selecionável (imagem) | Média | Alto | Detectar e exibir mensagem clara: "PDF é imagem, não contém texto extraível" |
-| Limite de contexto do modelo excedido | Média | Alto | Truncar chunks com priorização por relevância, exibir aviso |
-| Timeout de API do provider | Média | Médio | Timeout de 30s, retry 1x, fallback automático |
-| Parsing de PDF corrompido | Baixa | Médio | Try-catch com mensagem de erro amigável |
-| Docker build falha por dependência | Baixa | Alto | Lock de versões no package.json, node:20-alpine estável |
+| PDF without selectable text (image) | Medium | High | Detect and display clear message: "PDF is an image and contains no extractable text" |
+| Model context limit exceeded | Medium | High | Truncate chunks with relevance prioritization, display warning |
+| Provider API timeout | Medium | Medium | 30s timeout, 1 retry, automatic fallback |
+| Corrupted PDF parsing | Low | Medium | Try-catch with friendly error message |
+| Docker build fails due to dependency | Low | High | Version lock in package.json, stable node:20-alpine |
 
 ---
 
-## 2. Riscos de UX
+## 2. UX risks
 
-| Risco | Probabilidade | Impacto | Mitigação |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Usuário não entende a cadeia de valor | Média | Alto | Step indicator visual, labels claros, tooltips |
-| Tempo de geração longo (>10s) | Média | Médio | Loading progressivo, skeleton, mensagem "Gerando..." |
-| Usuário não configura provider antes de usar | Alta | Alto | Banner persistente, bloqueio de geração sem provider |
-| Interface confusa em mobile | Média | Baixo | Foco em desktop, layout responsivo básico |
-| Persona parece "formulário chato" | Média | Alto | Design visual rico: sliders, chips, preview em tempo real |
+| User doesn't understand the value chain | Medium | High | Visual step indicator, clear labels, tooltips |
+| Long generation time (>10s) | Medium | Medium | Progressive loading, skeleton, "Generating..." message |
+| User doesn't configure provider before using | High | High | Persistent banner, generation blocked without provider |
+| Confusing interface on mobile | Medium | Low | Desktop focus, basic responsive layout |
+| Persona feels like a "boring form" | Medium | High | Rich visual design: sliders, chips, real-time preview |
 
 ---
 
-## 3. Riscos de qualidade de prompt
+## 3. Prompt quality risks
 
-| Risco | Probabilidade | Impacto | Mitigação |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Spec gerada genérica demais | Média | Alto | Instruções fortes no meta-prompt para especificidade |
-| Prompt final não reflete persona | Média | Alto | Validação automática (P4) + checklist visual |
-| Guardrails ausentes no prompt final | Baixa | Alto | Guardrails como campo obrigatório na spec |
-| Exemplos few-shot incoerentes com tom | Média | Médio | Validação de tom nos exemplos via P4 |
-| Prompt muito longo para o modelo | Baixa | Médio | Contagem de tokens, aviso quando exceder 80% |
+| Generated spec is too generic | Medium | High | Strong instructions in meta-prompt for specificity |
+| Final prompt does not reflect persona | Medium | High | Automatic validation (P4) + visual checklist |
+| Guardrails absent from final prompt | Low | High | Guardrails as required field in spec |
+| Few-shot examples inconsistent with tone | Medium | Medium | Tone validation in examples via P4 |
+| Prompt too long for the model | Low | Medium | Token count, warning when exceeding 80% |
 
 ---
 
-## 4. Riscos de inconsistência de persona
+## 4. Persona inconsistency risks
 
-| Risco | Probabilidade | Impacto | Mitigação |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Formalidade alta + saudação informal | Média | Médio | Regra de validação cruzada entre campos |
-| Vocabulário proibido presente no prompt | Baixa | Alto | Verificação por keyword no prompt final |
-| Tom empático definido mas ausente nos exemplos | Média | Médio | Validação de padrões empáticos nos exemplos |
-| Persona genérica ("seja útil e amigável") | Alta | Alto | Instruções no meta-prompt para evitar generalidades |
-| Limites vagos ("não faça nada errado") | Média | Médio | Validação que exige limites específicos |
+| High formality + informal greeting | Medium | Medium | Cross-validation rule between fields |
+| Prohibited vocabulary present in prompt | Low | High | Keyword check in final prompt |
+| Empathetic tone defined but absent in examples | Medium | Medium | Empathetic pattern validation in examples |
+| Generic persona ("be helpful and friendly") | High | High | Instructions in meta-prompt to avoid generalities |
+| Vague limits ("don't do anything wrong") | Medium | Medium | Validation requiring specific limits |
 
 ---
 
-## 5. Riscos de provider/runtime
+## 5. Provider/runtime risks
 
-| Risco | Probabilidade | Impacto | Mitigação |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| API key inválida | Alta | Alto | Teste de conexão na configuração, mensagem clara |
-| Rate limiting do provider | Média | Médio | Retry com backoff exponencial, fallback |
-| Provider fora do ar | Baixa | Alto | Fallback automático, indicação visual |
-| Modelo indisponível no provider | Baixa | Médio | Usar modelo padrão do adapter |
-| claude-subscription indisponível | Alta | Baixo | Modo opcional, fallback obrigatório |
-| Resposta do provider em formato inesperado | Baixa | Alto | Parsing defensivo com try-catch e resposta de erro |
+| Invalid API key | High | High | Connection test in configuration, clear message |
+| Provider rate limiting | Medium | Medium | Retry with exponential backoff, fallback |
+| Provider outage | Low | High | Automatic fallback, visual indication |
+| Model unavailable at provider | Low | Medium | Use adapter's default model |
+| claude-subscription unavailable | High | Low | Optional mode, mandatory fallback |
+| Provider response in unexpected format | Low | High | Defensive parsing with try-catch and error response |
 
 ---
 
-## 6. Riscos de alucinação
+## 6. Hallucination risks
 
-| Risco | Probabilidade | Impacto | Mitigação |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Spec contém informação inventada | Média | Alto | Instrução explícita: "Use apenas o conhecimento fornecido" |
-| Persona sugere comportamento não solicitado | Baixa | Médio | Validação contra spec |
-| Prompt final adiciona regras inexistentes | Baixa | Alto | Validação cruzada prompt ↔ spec |
-| Exemplos few-shot inventam cenários | Média | Médio | Instrução para basear exemplos no conhecimento |
+| Spec contains fabricated information | Medium | High | Explicit instruction: "Use only the provided knowledge" |
+| Persona suggests unsolicited behavior | Low | Medium | Validation against spec |
+| Final prompt adds non-existent rules | Low | High | Cross-validation prompt ↔ spec |
+| Few-shot examples invent scenarios | Medium | Medium | Instruction to base examples on knowledge |
 
 ---
 
-## 7. Riscos de retrieval
+## 7. Retrieval risks
 
-| Risco | Probabilidade | Impacto | Mitigação |
+| Risk | Probability | Impact | Mitigation |
 |---|---|---|---|
-| Chunks muito grandes (perda de foco) | Média | Médio | Chunking com tamanho alvo 500-1000 tokens |
-| Chunks muito pequenos (perda de contexto) | Média | Médio | Overlap mínimo entre chunks |
-| Todo o conhecimento enviado sem seleção | Alta (por design) | Baixo | Aceitável no MVP; truncar se exceder limite |
-| Documento vazio após extração | Baixa | Alto | Validação pós-extração, mensagem de erro |
+| Chunks too large (loss of focus) | Medium | Medium | Chunking with 500–1000 token target size |
+| Chunks too small (loss of context) | Medium | Medium | Minimum overlap between chunks |
+| All knowledge sent without selection | High (by design) | Low | Acceptable in MVP; truncate if limit exceeded |
+| Empty document after extraction | Low | High | Post-extraction validation, error message |
 
 ---
 
-## Estratégias de mitigação consolidadas
+## Consolidated mitigation strategies
 
-### Mitigação de prompt quality
-1. Meta-prompts com instruções fortes de especificidade.
-2. Validação automática em cadeia (P4 após P3).
-3. Checklist visual de consistência.
-4. Campo obrigatório de guardrails em toda spec.
+### Prompt quality mitigation
+1. Meta-prompts with strong specificity instructions.
+2. Automatic chain validation (P4 after P3).
+3. Visual consistency checklist.
+4. Required guardrails field in every spec.
 
-### Mitigação de persona consistency
-1. Validação cruzada entre campos (ex: formalidade × saudação).
-2. Verificação de vocabulário proibido por keyword.
-3. Anti-exemplos gerados automaticamente para comparação.
-4. Score de consistência visível ao usuário.
+### Persona consistency mitigation
+1. Cross-validation between fields (e.g., formality × greeting).
+2. Prohibited vocabulary keyword check.
+3. Anti-examples generated automatically for comparison.
+4. Consistency score visible to the user.
 
-### Mitigação de provider reliability
-1. Fallback automático entre providers.
-2. Teste de conexão na configuração.
+### Provider reliability mitigation
+1. Automatic fallback between providers.
+2. Connection test in configuration.
 3. Timeout + retry + backoff.
-4. Indicação visual do provider ativo e estado.
+4. Visual indication of active provider and state.
 
-### Mitigação de UX
-1. Step indicator sempre visível.
-2. Loading states em todas as operações.
-3. Empty states com orientação.
-4. Erro states com ação sugerida.
-5. Banner de configuração quando provider ausente.
+### UX mitigation
+1. Step indicator always visible.
+2. Loading states in all operations.
+3. Empty states with guidance.
+4. Error states with suggested action.
+5. Configuration banner when provider is absent.
 
 ---
 
-## Testes adversariais
+## Adversarial tests
 
-| Teste | Input | Resultado esperado |
+| Test | Input | Expected result |
 |---|---|---|
-| Upload de PDF-imagem | PDF escaneado sem OCR | Mensagem: "Não foi possível extrair texto" |
-| Upload de arquivo vazio | TXT com 0 bytes | Mensagem: "Arquivo vazio" |
-| Objetivo vazio | Campo de objetivo em branco | Bloqueio com mensagem orientadora |
-| Todas as API keys inválidas | Keys erradas em todos os providers | Mensagem: "Nenhum provider disponível" |
-| Persona com campos contraditórios | Formalidade 5 + saudação "E aí mano" | Alerta de inconsistência na validação |
-| Vocabulário proibido no prompt | Palavra proibida aparece | Detecção e flag na validação |
-| Arquivo de 50 MB | Upload acima do limite | Bloqueio: "Arquivo excede 10 MB" |
-| 10 arquivos simultâneos | Upload acima do limite | Bloqueio: "Máximo 3 arquivos" |
-| Provider timeout | Simular timeout de 60s | Retry → fallback → erro claro |
-| Conhecimento em idioma não suportado | Documento em mandarim | Sistema gera spec (best effort) com aviso |
+| Upload of image-only PDF | Scanned PDF without OCR | Message: "Could not extract text" |
+| Upload of empty file | TXT with 0 bytes | Message: "Empty file" |
+| Empty objective | Blank objective field | Blocked with guidance message |
+| All API keys invalid | Wrong keys in all providers | Message: "No provider available" |
+| Persona with contradictory fields | Formality 5 + greeting "Hey dude" | Inconsistency alert in validation |
+| Prohibited vocabulary in prompt | Prohibited word appears | Detection and flag in validation |
+| 50 MB file | Upload above limit | Blocked: "File exceeds 10 MB" |
+| 10 simultaneous files | Upload above limit | Blocked: "Maximum 3 files" |
+| Provider timeout | Simulate 60s timeout | Retry → fallback → clear error |
+| Knowledge in unsupported language | Document in Mandarin | System generates spec (best effort) with warning |
 
 ---
 
-## Critérios de aprovação da demo
+## Demo approval criteria
 
-| Critério | Condição de aprovação |
+| Criterion | Approval condition |
 |---|---|
-| Fluxo completo | Upload → Export funciona sem erro não tratado |
-| Tempo de valor | Primeira saída útil em menos de 60 segundos |
-| Qualidade visual | Interface parece produto real, não protótipo |
-| Persona forte | Feature de persona é percebida como central |
-| Provider funcional | Pelo menos 1 provider funciona end-to-end |
-| Fallback funcional | Fallback é executado quando primário falha |
-| Validação útil | Checklist de consistência funciona e detecta problemas |
-| Export funcional | MD e JSON gerados e baixáveis |
-| Docker funcional | `docker-compose up` sobe tudo sem intervenção |
-| Gravável | Demo pode ser gravada em vídeo curto sem constrangimento |
+| Full flow | Upload → Export works without unhandled error |
+| Time to value | First useful output in less than 60 seconds |
+| Visual quality | Interface looks like a real product, not a prototype |
+| Strong persona | Persona feature is perceived as central |
+| Functional provider | At least 1 provider works end-to-end |
+| Functional fallback | Fallback is executed when primary fails |
+| Useful validation | Consistency checklist works and detects issues |
+| Functional export | MD and JSON generated and downloadable |
+| Functional Docker | `docker-compose up` starts everything without intervention |
+| Recordable | Demo can be recorded in a short video without embarrassment |
