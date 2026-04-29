@@ -26,23 +26,24 @@ NEVER start implementing directly without analyzing and aligning your task with 
 ## Development Commands
 
 ```bash
-# Full startup (Docker + Supabase + Next.js)
+# Full startup — Supabase + next build + next start (production, instant page loads)
 npm run all
 
-# Full shutdown (kills Node port 3000, Docker containers, purge)
+# Full shutdown — kills Next.js process and Supabase containers
 npm run stop:all
 
-# Next.js only (Supabase must already be running)
-npm run dev
+# Dev mode with HMR — Supabase + Turbopack dev server
+# WARNING: first page load takes ~60s cold compile; subsequent loads are instant
+npm run all:dev
 
-# Production build
-npm run build && npm start
+# Next.js Turbopack dev only (Supabase must already be running)
+npm run dev
 
 # Lint
 npm run lint
 ```
 
-Always prefer `npm run all` / `npm run stop:all` — they manage Docker and Supabase without cognitive overhead.
+Always prefer `npm run all` / `npm run stop:all` — they build and serve production, so pages load instantly. Use `npm run all:dev` only when you need HMR during active development.
 
 ### Supabase CLI (when needed)
 ```bash
